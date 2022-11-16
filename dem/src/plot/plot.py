@@ -42,3 +42,14 @@ def plot(d, p, path, it, show=False, png=False):
                         bbox_inches='tight')
     if show: plt.pause(0.0001)
     plt.clf()
+
+### ************************************************
+### Plot history of positions
+def plot_history(n, h):
+
+    plt.ioff()
+    ax  = plt.gca()
+    fig = plt.gcf()
+    plt.plot(h[:,1])
+    plt.grid()
+    plt.show()

@@ -15,8 +15,8 @@ class gravity(base_app):
         super().__init__()
 
         self.name      = 'gravity'
-        self.t_max     = 2.0
-        self.dt        = 0.000001
+        self.t_max     = 5.0
+        self.dt        = 0.000025
         self.plot_freq = 10000
         self.plot_it   = 0
         self.plot_show = False
@@ -26,9 +26,6 @@ class gravity(base_app):
         young   = 210.0e9 # steel
         poisson = 0.25    # steel
 
-        #density = 220    # steel
-        #young   = 0.5e9  # steel
-        #poisson = 0.46   # steel
         self.p = particles(n           = 1,
                            density     = density,
                            radius      = 0.05,
@@ -67,7 +64,7 @@ class gravity(base_app):
     ### Compute forces
     def forces(self):
 
-        self.p.reset_acceleration()
+        self.p.reset_forces()
         self.p.collisions()
         self.d.collisions(self.p)
         self.p.gravity()

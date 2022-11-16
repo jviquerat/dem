@@ -123,19 +123,19 @@ class domain:
                         dx   = abs(dx)
 
                         # normal elastic force
-                        p.a[i,:] += pow(dx,1.5)*k_n*n[:]
+                        p.f[i,:] += pow(dx,1.5)*k_n*n[:]
                         #print(pow(dx,1.5)*k_n*n[:])
 
                         # normal damping force
-                        p.a[i,:] -= pow(dx,0.25)*nu_n*vn*n[:]
+                        p.f[i,:] -= pow(dx,0.25)*nu_n*vn*n[:]
                         #print(-pow(dx,0.25)*nu_n*vn*n[:])
 
                         # tangential elastic force
-                        #p.a[i,:] += pow(dx,0.5)*k_t*dt*t[:]
+                        #p.f[i,:] += pow(dx,0.5)*k_t*dt*t[:]
                         #print(pow(dx,0.5)*k_t*dt*t[:])
 
                         # tangential damping force
-                        p.a[i,:] -= pow(dx,0.25)*nu_t*vt*t[:]
+                        p.f[i,:] -= pow(dx,0.25)*nu_t*vt*t[:]
                         #print(-pow(dx,0.25)*nu_t*vt*t[:])
 
                         #print("")

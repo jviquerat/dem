@@ -15,7 +15,7 @@ class particles:
                  young       = 100.0,
                  poisson     = 0.1,
                  color       = "b",
-                 stpre       = False):
+                 store       = False):
 
         self.n           = n
         self.density     = density
@@ -27,6 +27,7 @@ class particles:
         self.vol         = (4.0/3.0)*math.pi*radius**3
         self.mass        = self.vol*self.density
         self.g           = 9.81
+        self.store       = store
 
         self.reset()
 
@@ -40,13 +41,14 @@ class particles:
         self.d = np.zeros((self.n,2))               # displacements
         self.v = np.zeros((self.n,2))               # velocities
         self.a = np.zeros((self.n,2))               # accelerations
+        self.f = np.zeros((self.n,2))               # forces
         self.e = np.ones((self.n))*self.restitution # restitution coeff
         self.y = np.ones((self.n))*self.young       # young modulus
         self.p = np.ones((self.n))*self.poisson     # poisson ratio
 
         # Optional storage
         if self.store:
-            self.history = np.empty((self.n,2), float)
+            self.history = np.empty((2*self.n), float)
 
         self.set_particles()
 
@@ -66,10 +68,10 @@ class particles:
         self.alpha *= math.sqrt(5.0/6.0)
 
     ### ************************************************
-    ### Reset acceleration
-    def reset_acceleration(self):
+    ### Reset forces
+    def reset_forces(self):
 
-        self.a[:,:] = 0.0
+        self.f[:,:] = 0.0
 
     ### ************************************************
     ### Compute maximal velocity
@@ -108,16 +110,13 @@ class particles:
         self.a[:,1] -= self.m[:]*self.g
 
     ### ************************************************
-    ### Update positions
+    ### Update positions using verlet method
     def update(self, dt):
 
+        self.v[:] += 0.5*dt*(self.a[:] + self.f[:]/self.m[:])
+        self.d[:]  = dt*self.v[:] + 0.5*dt*dt*self.f[:]/self.m[:]
+        self.x[:] += self.d[:]
+        self.a[:]  = self.f[:]/self.m[:]
+
         if (self.store):
-            self.history = np.append(self.history, self.x)
-
-        self.a[:] /= self.m[:]
-        self.v += dt*self.a
-        self.d  = dt*self.v + 0.5*dt*dt*self.a
-        self.x += self.d
-
-
-
+            self.history = np.vstack((self.history, self.x.reshape((1,-1))))
