@@ -15,18 +15,18 @@ class gravity(base_app):
         super().__init__()
 
         self.name      = 'gravity'
-        self.t_max     = 5.0
+        self.t_max     = 3.0
         self.dt        = 0.000025
-        self.plot_freq = 10000
+        self.plot_freq = 1000
         self.plot_it   = 0
-        self.plot_show = False
+        self.plot_show = True
         self.plot_png  = False
 
         density = 2200    # steel
         young   = 210.0e9 # steel
         poisson = 0.25    # steel
 
-        self.p = particles(n           = 1,
+        self.p = particles(n           = 3,
                            density     = density,
                            radius      = 0.05,
                            restitution = 1.0,
@@ -34,7 +34,18 @@ class gravity(base_app):
                            poisson     = poisson,
                            color       = "b",
                            store       = True)
+
+        # Restitution ratios
+        self.p.e[0] = 1.0
+        self.p.e[1] = 0.8
+        self.p.e[2] = 0.5
         self.p.set_particles()
+
+        # Colors
+        self.p.c[0] = 'b'
+        self.p.c[1] = 'r'
+        self.p.c[2] = 'y'
+
         self.d = domain(dtype      = "rectangle",
                         x_min      = 0.0,
                         x_max      = 1.0,
@@ -55,10 +66,9 @@ class gravity(base_app):
 
         self.t = 0.0
 
-        self.p.x[0,0] = 0.5
-        self.p.x[0,1] = 0.4
-        self.p.v[0,0] = 0.0
-
+        self.p.x[:,0] = 0.5
+        self.p.x[:,1] = 0.4
+        self.p.v[:,0] = 1.0
 
     ### ************************************************
     ### Compute forces

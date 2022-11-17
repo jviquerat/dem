@@ -33,7 +33,7 @@ def plot(d, p, path, it, show=False, png=False):
     # Plot particles
     for i in range(p.n):
         ax.add_patch(Circle((p.x[i,0], p.x[i,1]), p.r[i],
-                            fill=True, color='b'))
+                            fill=True, color=p.c[i]))
 
     ax.set_aspect('equal')
     fig.tight_layout()
@@ -50,6 +50,6 @@ def plot_history(n, h):
     plt.ioff()
     ax  = plt.gca()
     fig = plt.gcf()
-    plt.plot(h[:,1])
+    plt.plot(h[:,0],h[:,1])
     plt.grid()
     plt.show()

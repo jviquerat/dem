@@ -28,6 +28,7 @@ class particles:
         self.mass        = self.vol*self.density
         self.g           = 9.81
         self.store       = store
+        self.color       = color
 
         self.reset()
 
@@ -45,6 +46,7 @@ class particles:
         self.e = np.ones((self.n))*self.restitution # restitution coeff
         self.y = np.ones((self.n))*self.young       # young modulus
         self.p = np.ones((self.n))*self.poisson     # poisson ratio
+        self.c = [self.color]*self.n                # colors
 
         # Optional storage
         if self.store:
@@ -113,10 +115,12 @@ class particles:
     ### Update positions using verlet method
     def update(self, dt):
 
-        self.v[:] += 0.5*dt*(self.a[:] + self.f[:]/self.m[:])
-        self.d[:]  = dt*self.v[:] + 0.5*dt*dt*self.f[:]/self.m[:]
-        self.x[:] += self.d[:]
-        self.a[:]  = self.f[:]/self.m[:]
+        self.f[:,0] /= self.m[:]
+        self.f[:,1] /= self.m[:]
+        self.v[:,:] += 0.5*dt*(self.a[:,:] + self.f[:,:])
+        self.d[:,:]  = dt*self.v[:,:] + 0.5*dt*dt*self.f[:,:]
+        self.x[:,:] += self.d[:,:]
+        self.a[:,:]  = self.f[:,:]
 
         if (self.store):
             self.history = np.vstack((self.history, self.x.reshape((1,-1))))
