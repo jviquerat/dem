@@ -15,7 +15,7 @@ class gravity(base_app):
         super().__init__()
 
         self.name      = 'gravity'
-        self.t_max     = 3.0
+        self.t_max     = 1.0
         self.dt        = 0.000025
         self.plot_freq = 1000
         self.plot_it   = 0
@@ -99,4 +99,4 @@ class gravity(base_app):
     ### Finalize
     def finalize(self):
 
-        plot_history(self.p.n, self.p.history)
+        plot_history(self.p.n, self.p.history, self.p.c)

@@ -45,11 +45,13 @@ def plot(d, p, path, it, show=False, png=False):
 
 ### ************************************************
 ### Plot history of positions
-def plot_history(n, h):
+def plot_history(n, h, c):
 
+    h = h.reshape((-1,2*n))
     plt.ioff()
     ax  = plt.gca()
     fig = plt.gcf()
-    plt.plot(h[:,0],h[:,1])
+    for i in range(n):
+        plt.plot(h[:,2*i],h[:,2*i+1], color=c[i])
     plt.grid()
     plt.show()

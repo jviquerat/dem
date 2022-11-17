@@ -50,7 +50,7 @@ class particles:
 
         # Optional storage
         if self.store:
-            self.history = np.empty((2*self.n), float)
+            self.history = np.array([])
 
         self.set_particles()
 
@@ -123,4 +123,4 @@ class particles:
         self.a[:,:]  = self.f[:,:]
 
         if (self.store):
-            self.history = np.vstack((self.history, self.x.reshape((1,-1))))
+            self.history = np.append(self.history, self.x.reshape((1,-1)))
