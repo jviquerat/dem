@@ -9,6 +9,7 @@ class particles:
     ### Constructor
     def __init__(self,
                  n           = 10,
+                 nt          = 1000,
                  density     = 1.0,
                  radius      = 1.0,
                  restitution = 0.8,
@@ -18,6 +19,7 @@ class particles:
                  store       = False):
 
         self.n           = n
+        self.nt          = nt
         self.density     = density
         self.radius      = radius
         self.restitution = restitution
@@ -50,7 +52,7 @@ class particles:
 
         # Optional storage
         if self.store:
-            self.history = np.array([])
+            self.history = np.zeros((self.nt, self.n, 2))
 
         self.set_particles()
 
@@ -113,7 +115,7 @@ class particles:
 
     ### ************************************************
     ### Update positions using verlet method
-    def update(self, dt):
+    def update(self, dt, it):
 
         self.f[:,0] /= self.m[:]
         self.f[:,1] /= self.m[:]
@@ -123,4 +125,4 @@ class particles:
         self.a[:,:]  = self.f[:,:]
 
         if (self.store):
-            self.history = np.append(self.history, self.x.reshape((1,-1)))
+            self.history[it,:,:] = self.x[:,:]

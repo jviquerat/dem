@@ -21,14 +21,14 @@ def run(app):
     while (compute):
 
         # Printings and plot
-        app.printings()
+        app.printings(it)
         app.plot(it)
 
         # Compute forces
         app.forces()
 
         # Update positions
-        app.update()
+        app.update(it)
 
         # Check stopping criterion
         compute = app.check_stop()

@@ -17,6 +17,7 @@ class gravity(base_app):
         self.name      = 'gravity'
         self.t_max     = 3.0
         self.dt        = 0.000025
+        self.nt        = int(self.t_max/self.dt)+1
         self.plot_freq = 1000
         self.plot_it   = 0
         self.plot_show = False
@@ -27,6 +28,7 @@ class gravity(base_app):
         poisson = 0.25    # steel
 
         self.p = particles(n           = 1,
+                           nt          = self.nt,
                            density     = density,
                            radius      = 0.05,
                            restitution = 1.0,
@@ -70,9 +72,9 @@ class gravity(base_app):
 
     ### ************************************************
     ### Update positions
-    def update(self):
+    def update(self, it):
 
-        self.p.update(self.dt)
+        self.p.update(self.dt, it)
         self.t += self.dt
 
     ### ************************************************
