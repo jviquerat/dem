@@ -52,6 +52,9 @@ def plot_history(n, h, c):
     ax  = plt.gca()
     fig = plt.gcf()
     for i in range(n):
-        plt.plot(h[:,2*i],h[:,2*i+1], color=c[i])
+        ax.add_patch(Circle((h[0,2*i],h[0,2*i+1]), 0.01, color=c[i]))
+        plt.plot(h[:,2*i],h[:,2*i+1], color=c[i], linestyle='dashed')
+    ax.set_aspect('equal')
+    fig.tight_layout()
     plt.grid()
     plt.show()

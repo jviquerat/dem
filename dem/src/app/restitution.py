@@ -7,8 +7,8 @@ from dem.src.app.base_app import *
 from dem.src.plot.plot    import *
 
 ### ************************************************
-### Single sphere under gravity
-class gravity(base_app):
+### Comparison of spheres with different restitution coefficients
+class restitution(base_app):
     ### ************************************************
     ### Constructor
     def __init__(self):
@@ -26,7 +26,7 @@ class gravity(base_app):
         young   = 210.0e9 # steel
         poisson = 0.25    # steel
 
-        self.p = particles(n           = 1,
+        self.p = particles(n           = 3,
                            density     = density,
                            radius      = 0.05,
                            restitution = 1.0,
@@ -34,7 +34,17 @@ class gravity(base_app):
                            poisson     = poisson,
                            color       = "b",
                            store       = True)
+
+        # Restitution ratios
+        self.p.e[0] = 0.9
+        self.p.e[1] = 0.8
+        self.p.e[2] = 0.7
         self.p.set_particles()
+
+        # Colors
+        self.p.c[0] = 'b'
+        self.p.c[1] = 'r'
+        self.p.c[2] = 'y'
 
         self.d = domain(dtype      = "rectangle",
                         x_min      = 0.0,
@@ -58,6 +68,7 @@ class gravity(base_app):
 
         self.p.x[:,0] = 0.5
         self.p.x[:,1] = 0.4
+        self.p.v[:,0] = 1.0
 
     ### ************************************************
     ### Compute forces

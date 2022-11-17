@@ -131,7 +131,7 @@ class domain:
                         #print(-pow(dx,0.25)*nu_n*vn*n[:])
 
                         # tangential elastic force
-                        #p.f[i,:] += pow(dx,0.5)*k_t*dt*t[:]
+                        #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
                         #print(pow(dx,0.5)*k_t*dt*t[:])
 
                         # tangential damping force
