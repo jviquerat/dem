@@ -18,9 +18,9 @@ class base_app():
 
     ### ************************************************
     ### Iteration printings
-    def printings(self):
+    def printings(self, it):
 
-        print("# t = {0:.3f}".format(self.t)+" / {0:.3f}".format(self.t_max), end='\r')
+        print("# it = "+str(it)+", t = {0:.3f}".format(self.t)+" / {0:.3f}".format(self.t_max), end='\r')
 
     ### ************************************************
     ### Check stopping criterion
