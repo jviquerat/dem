@@ -1,6 +1,9 @@
 # Generic imports
 import math
 import numpy as np
+import matplotlib
+
+from   matplotlib.patches import Rectangle
 
 # Custom imports
 from dem.src.domain.base_domain import *
@@ -65,6 +68,15 @@ class rectangle(base_domain):
         self.c[3]   =-self.x_min
         self.n[3,0] = 1.0
         self.n[3,1] = 0.0
+
+    ### ************************************************
+    ### Plot domain
+    def plot(self, ax):
+
+        ax.add_patch(Rectangle((self.x_min, self.y_min),
+                                self.x_max-self.x_min,
+                                self.y_max-self.y_min,
+                                fill=False, color='r'))
 
     ### ************************************************
     ### Compute collisions with a particle

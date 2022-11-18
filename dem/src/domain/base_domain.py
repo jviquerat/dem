@@ -22,3 +22,9 @@ class base_domain():
     def collide(self, p):
 
         raise NotImplementedError
+
+    ### ************************************************
+    ### Plot domain
+    def plot(self, ax):
+
+        raise NotImplementedError
