@@ -3,7 +3,8 @@ import math
 
 # Custom imports
 from dem.src.core.particle import *
-from dem.src.core.domain   import *
+from dem.src.domain.domain import *
+from dem.src.plot.plot     import *
 
 ### ************************************************
 ### Base app

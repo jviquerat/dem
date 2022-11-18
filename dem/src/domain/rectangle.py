@@ -2,9 +2,12 @@
 import math
 import numpy as np
 
+# Custom imports
+from dem.src.domain.base_domain import *
+
 ### ************************************************
-### Class defining domain
-class domain:
+### Class defining rectangle domain
+class rectangle(base_domain):
     ### ************************************************
     ### Constructor
     def __init__(self,

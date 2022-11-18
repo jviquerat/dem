@@ -48,13 +48,13 @@ class restitution(base_app):
         self.p.c[1] = 'r'
         self.p.c[2] = 'y'
 
-        self.d = domain(dtype      = "rectangle",
-                        x_min      = 0.0,
-                        x_max      = 1.0,
-                        y_min      = 0.0,
-                        y_max      = 0.5,
-                        young      = young,
-                        poisson    = poisson)
+        self.d = domain_factory.create("rectangle",
+                                       x_min      = 0.0,
+                                       x_max      = 1.0,
+                                       y_min      = 0.0,
+                                       y_max      = 0.5,
+                                       young      = young,
+                                       poisson    = poisson)
 
         self.path = self.name
         os.makedirs(self.path, exist_ok=True)
