@@ -37,43 +37,15 @@ class rectangle(base_domain):
         # Ridge 0 is the bottom one, then we pursue in
         # trigonometric order. d array corresponds to the
         # normalization parameter sqrt(a*a + b*b)
-        self.a = np.zeros((4))
-        self.b = np.zeros((4))
-        self.c = np.zeros((4))
-        self.d = np.zeros((4))
-        self.n = np.zeros((4,2))
-
-        # Bottom
-        self.a[0]   = 0.0
-        self.b[0]   = 1.0
-        self.c[0]   =-self.y_min
-        self.d[0]   = 1.0
-        self.n[0,0] = 0.0
-        self.n[0,1] = 1.0
-
-        # Right
-        self.a[1]   = 1.0
-        self.b[1]   = 0.0
-        self.c[1]   =-self.x_max
-        self.d[1]   = 1.0
-        self.n[1,0] =-1.0
-        self.n[1,1] = 0.0
-
-        # Top
-        self.a[2]   = 0.0
-        self.b[2]   = 1.0
-        self.c[2]   =-self.y_max
-        self.d[2]   = 1.0
-        self.n[2,0] = 0.0
-        self.n[2,1] =-1.0
-
-        # Left
-        self.a[3]   = 1.0
-        self.b[3]   = 0.0
-        self.c[3]   =-self.x_min
-        self.d[3]   = 1.0
-        self.n[3,0] = 1.0
-        self.n[3,1] = 0.0
+        self.a = np.array([0.0, 1.0, 0.0, 1.0])
+        self.b = np.array([1.0, 0.0, 1.0, 0.0])
+        self.c = np.array([-self.y_min,-self.x_max,
+                           -self.y_max,-self.x_min])
+        self.d = np.array([1.0, 1.0, 1.0, 1.0])
+        self.n = np.array([[ 0.0, 1.0],
+                           [-1.0, 0.0],
+                           [ 0.0,-1.0],
+                           [ 1.0, 0.0]])
 
     ### ************************************************
     ### Distance to given coordinates
