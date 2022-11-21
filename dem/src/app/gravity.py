@@ -49,7 +49,6 @@ class gravity(base_app):
         os.makedirs(self.path, exist_ok=True)
 
         self.reset()
-        self.r_min = self.p.min_radius()
 
     ### ************************************************
     ### Reset app

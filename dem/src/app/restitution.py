@@ -14,7 +14,7 @@ class restitution(base_app):
     def __init__(self):
         super().__init__()
 
-        self.name      = 'gravity'
+        self.name      = 'restitution'
         self.t_max     = 3.0
         self.dt        = 0.000025
         self.nt        = int(self.t_max/self.dt)+1
@@ -60,7 +60,6 @@ class restitution(base_app):
         os.makedirs(self.path, exist_ok=True)
 
         self.reset()
-        self.r_min = self.p.min_radius()
 
     ### ************************************************
     ### Reset app
