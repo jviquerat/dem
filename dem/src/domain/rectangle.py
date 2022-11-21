@@ -34,17 +34,20 @@ class rectangle(base_domain):
         self.kappa = 2.0*(2.0 + self.p)*(1.0 - self.p)/self.y
 
         # Define a*x + b*y + c = 0 for all four borders
-        # Ridge 0 is the bottom one, then we pursue
-        # in trigonometric order
+        # Ridge 0 is the bottom one, then we pursue in
+        # trigonometric order. d array corresponds to the
+        # normalization parameter sqrt(a*a + b*b)
         self.a = np.zeros((4))
         self.b = np.zeros((4))
         self.c = np.zeros((4))
+        self.d = np.zeros((4))
         self.n = np.zeros((4,2))
 
         # Bottom
         self.a[0]   = 0.0
         self.b[0]   = 1.0
         self.c[0]   =-self.y_min
+        self.d[0]   = 1.0
         self.n[0,0] = 0.0
         self.n[0,1] = 1.0
 
@@ -52,6 +55,7 @@ class rectangle(base_domain):
         self.a[1]   = 1.0
         self.b[1]   = 0.0
         self.c[1]   =-self.x_max
+        self.d[1]   = 1.0
         self.n[1,0] =-1.0
         self.n[1,1] = 0.0
 
@@ -59,6 +63,7 @@ class rectangle(base_domain):
         self.a[2]   = 0.0
         self.b[2]   = 1.0
         self.c[2]   =-self.y_max
+        self.d[2]   = 1.0
         self.n[2,0] = 0.0
         self.n[2,1] =-1.0
 
@@ -66,8 +71,20 @@ class rectangle(base_domain):
         self.a[3]   = 1.0
         self.b[3]   = 0.0
         self.c[3]   =-self.x_min
+        self.d[3]   = 1.0
         self.n[3,0] = 1.0
         self.n[3,1] = 0.0
+
+    ### ************************************************
+    ### Distance to given coordinates
+    def distance(self, x):
+
+        dist    = np.zeros((4))
+        dist[:] = np.absolute(self.a[:]*x[0] +
+                              self.b[:]*x[1] +
+                              self.c[:])/self.d[:]
+
+        return dist
 
     ### ************************************************
     ### Plot domain
@@ -112,17 +129,13 @@ class rectangle(base_domain):
             # tangential damping
             nu_t = p.alpha[i]*math.sqrt(k_t*m)
 
+            dist = self.distance(x)
+
             for j in range(4):
-                a    = self.a[j]   # coefficients
-                b    = self.b[j]   # coefficients
-                c    = self.c[j]   # coefficients
                 n[:] = self.n[j,:] # normal  to boundary
                 t[0] = n[1]        # tangent to boundary
                 t[1] =-n[0]        # tangent to boundary
-
-                dist  = abs(a*x[0] + b*x[1] + c) # distance to border
-                dist /= math.sqrt(a*a + b*b)     # distance to border
-                dx = dist - r                    # relative distance
+                dx = dist[j] - r   # relative distance
 
                 if (dx < 0.0):
                     vn   = np.dot(v,n) # normal     velocity
