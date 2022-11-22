@@ -38,21 +38,21 @@ class particles:
     ### Reset arrays
     def reset(self):
 
-        self.m = np.ones((self.n))*self.mass        # masses
-        self.r = np.ones((self.n))*self.radius      # radii
-        self.x = np.zeros((self.n,2))               # positions
-        self.d = np.zeros((self.n,2))               # displacements
-        self.v = np.zeros((self.n,2))               # velocities
-        self.a = np.zeros((self.n,2))               # accelerations
-        self.f = np.zeros((self.n,2))               # forces
-        self.e = np.ones((self.n))*self.restitution # restitution coeff
-        self.y = np.ones((self.n))*self.young       # young modulus
-        self.p = np.ones((self.n))*self.poisson     # poisson ratio
+        self.m = np.ones((self.n), np.float32)*self.mass        # masses
+        self.r = np.ones((self.n), np.float32)*self.radius      # radii
+        self.x = np.zeros((self.n,2), np.float32)               # positions
+        self.d = np.zeros((self.n,2), np.float32)               # displacements
+        self.v = np.zeros((self.n,2), np.float32)               # velocities
+        self.a = np.zeros((self.n,2), np.float32)               # accelerations
+        self.f = np.zeros((self.n,2), np.float32)               # forces
+        self.e = np.ones((self.n), np.float32)*self.restitution # restitution coeff
+        self.y = np.ones((self.n), np.float32)*self.young       # young modulus
+        self.p = np.ones((self.n), np.float32)*self.poisson     # poisson ratio
         self.c = [self.color]*self.n                # colors
 
         # Optional storage
         if self.store:
-            self.history = np.zeros((self.nt, self.n, 2))
+            self.history = np.zeros((self.nt, self.n, 2), np.float32)
 
         self.set_particles()
 

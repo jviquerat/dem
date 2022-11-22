@@ -12,57 +12,63 @@ from dem.src.domain.base_domain import *
 
 ### ************************************************
 ### Distance from domain to given coordinates
-@jit(cache=True, nopython=True, fastmath=True)
-def domain_distance(a, b, c, d, x):
+@nb.njit(cache=True)
+def domain_distance(a, b, c, d, x, r, n):
 
-    dist    = np.zeros((4), np.float32)
-    dist[:] = np.absolute(a[:]*x[0] +
-                          b[:]*x[1] +
-                          c[:])/d[:]
+    ci = np.empty((0), np.uint16)
+    cj = np.empty((0), np.uint16)
+    cd = np.empty((0), np.float32)
 
-    return dist
+    for i in range(n):
+        for j in range(4):
+            dist = np.absolute(a[j]*x[i,0] + b[j]*x[i,1] + c[j])/d[j]
+            dx   = dist - r[i] # relative distance
+
+            if (dx < 0.0):
+                ci = np.append(ci, np.uint16(i))
+                cj = np.append(cj, np.uint16(j))
+                cd = np.append(cd, np.float32(abs(dx)))
+
+    return ci, cj, cd
 
 ### ************************************************
 ### Collision forces
-@jit(cache=True, fastmath=True)
+@njit(cache=True)
 def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, cj, n_coll):
 
-    k_n  = np.zeros((n_coll), np.float32)
-    nu_n = np.zeros((n_coll), np.float32)
-    k_t  = np.zeros((n_coll), np.float32)
-    nu_t = np.zeros((n_coll), np.float32)
-    vn   = np.zeros((n_coll), np.float32)
-    vt   = np.zeros((n_coll), np.float32)
+    for k in range(n_coll):
+        i = ci[k]
+        j = cj[k]
 
-    # normal stiffness
-    k_n[:]  = (4.0/3.0)*np.sqrt(r[ci[:]])/(p_sigma[ci[:]] + d_sigma)
+        # normal stiffness
+        k_n  = (4.0/3.0)*np.sqrt(r[i])/(p_sigma[i] + d_sigma[i])
 
-    # normal damping
-    nu_n[:] = alpha[ci[:]]*np.sqrt(1.5*k_n*m[ci[:]])
+        # normal damping
+        nu_n = alpha[i]*np.sqrt(1.5*k_n*m[i])
 
-    # tangential stiffness
-    k_t[:]  = 8.0*np.sqrt(r[ci[:]])/(p_kappa[ci[:]] + d_kappa)
+        # tangential stiffness
+        k_t  = 8.0*np.sqrt(r[i])/(p_kappa[i] + d_kappa[i])
 
-    # tangential damping
-    nu_t[:] = alpha[ci[:]]*np.sqrt(k_t*m[ci[:]])
+        # tangential damping
+        nu_t = alpha[i]*np.sqrt(k_t*m[i])
 
-    vn[:]   = v[ci[:],0]*n[cj[:],0] + v[ci[:],1]*n[cj[:],1]
-    vt[:]   = v[ci[:],0]*t[cj[:],0] + v[ci[:],1]*t[cj[:],1]
+        vn   = v[i,0]*n[j,0] + v[i,1]*n[j,1]
+        vt   = v[i,0]*t[j,0] + v[i,1]*t[j,1]
 
-    # normal elastic force
-    f[ci[:],0] += np.power(dx[:],1.5)*k_n[:]*n[cj[:],0]
-    f[ci[:],1] += np.power(dx[:],1.5)*k_n[:]*n[cj[:],1]
+        # normal elastic force
+        f[i,0] += np.power(dx[k],1.5)*k_n*n[j,0]
+        f[i,1] += np.power(dx[k],1.5)*k_n*n[j,1]
 
-    # normal damping force
-    f[ci[:],0] -= np.power(dx[:],0.25)*nu_n[:]*vn[:]*n[cj[:],0]
-    f[ci[:],1] -= np.power(dx[:],0.25)*nu_n[:]*vn[:]*n[cj[:],1]
+        # normal damping force
+        f[i,0] -= np.power(dx[k],0.25)*nu_n*vn*n[j,0]
+        f[i,1] -= np.power(dx[k],0.25)*nu_n*vn*n[j,1]
 
-    # tangential elastic force
-    #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
+        # tangential elastic force
+        #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
 
-    # tangential damping force
-    f[ci[:],0] -= np.power(dx[:],0.25)*nu_t[:]*vt[:]*t[cj[:],0]
-    f[ci[:],1] -= np.power(dx[:],0.25)*nu_t[:]*vt[:]*t[cj[:],1]
+        # tangential damping force
+        f[i,0] -= np.power(dx[k],0.25)*nu_t*vt*t[j,0]
+        f[i,1] -= np.power(dx[k],0.25)*nu_t*vt*t[j,1]
 
 
 ### ************************************************
@@ -122,24 +128,16 @@ class rectangle(base_domain):
     ### Compute collisions with a particle
     def collisions(self, p):
 
-        ci = np.empty((0), dtype=int)
-        cj = np.empty((0), dtype=int)
-        cd = np.empty((0), dtype=float)
+        # Compute distances to domain boundaries
+        ci, cj, cd = domain_distance(self.a, self.b, self.c, self.d, p.x, p.r, p.n)
 
-        for i in range(p.n):
-            dist = domain_distance(self.a, self.b, self.c, self.d, p.x[i,:])
-
-            for j in range(4):
-                dx = dist[j] - p.r[i] # relative distance
-
-                if (dx < 0.0):
-                    ci = np.append(ci, i)
-                    cj = np.append(cj, j)
-                    cd = np.append(cd, dx)
-
+        # Check if there are collisions
         n_coll = len(ci)
         if (n_coll == 0): return
 
-        cd = np.abs(cd)
+        # Generate arrays for force computation
+        sigma = np.ones((n_coll))*self.sigma
+        kappa = np.ones((n_coll))*self.kappa
 
-        forces(p.f, cd, p.r, p.alpha, p.sigma, p.kappa, self.sigma, self.kappa, p.m, p.v, self.n, self.t, ci, cj, n_coll)
+        # Compute forces
+        forces(p.f, cd, p.r, p.alpha, p.sigma, p.kappa, sigma, kappa, p.m, p.v, self.n, self.t, ci, cj, n_coll)
