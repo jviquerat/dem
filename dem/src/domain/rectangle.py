@@ -81,35 +81,36 @@ class rectangle(base_domain):
         vn = np.zeros((2)) # normal     velocity
         vt = np.zeros((2)) # tangential velocity
         for i in range(p.n):
-            m    = p.m[i]     # mass
-            r    = p.r[i]     # radius
-            s    = p.sigma[i] # sigma
-            k    = p.kappa[i] # kappa
-            x[:] = p.x[i,:]   # position
-            v[:] = p.v[i,:]   # velocity
-            d[:] = p.d[i,:]   # displacement
 
-            # normal stiffness
-            k_n  = (4.0/3.0)*math.sqrt(r)/(s + self.sigma)
-
-            # normal damping
-            nu_n = p.alpha[i]*math.sqrt(1.5*k_n*m)
-
-            # tangential stiffness
-            k_t  = 8.0*math.sqrt(r)/(k + self.kappa)
-
-            # tangential damping
-            nu_t = p.alpha[i]*math.sqrt(k_t*m)
-
+            x[:] = p.x[i,:] # position
+            r    = p.r[i]   # radius
             dist = self.distance(x)
 
             for j in range(4):
-                n[:] = self.n[j,:] # normal  to boundary
-                t[0] = n[1]        # tangent to boundary
-                t[1] =-n[0]        # tangent to boundary
                 dx = dist[j] - r   # relative distance
 
                 if (dx < 0.0):
+                    m    = p.m[i]     # mass
+                    s    = p.sigma[i] # sigma
+                    k    = p.kappa[i] # kappa
+                    v[:] = p.v[i,:]   # velocity
+                    d[:] = p.d[i,:]   # displacement
+
+                    # normal stiffness
+                    k_n  = (4.0/3.0)*math.sqrt(r)/(s + self.sigma)
+
+                    # normal damping
+                    nu_n = p.alpha[i]*math.sqrt(1.5*k_n*m)
+
+                    # tangential stiffness
+                    k_t  = 8.0*math.sqrt(r)/(k + self.kappa)
+
+                    # tangential damping
+                    nu_t = p.alpha[i]*math.sqrt(k_t*m)
+
+                    n[:] = self.n[j,:] # normal  to boundary
+                    t[0] = n[1]        # tangent to boundary
+                    t[1] =-n[0]        # tangent to boundary
                     vn   = np.dot(v,n) # normal     velocity
                     vt   = np.dot(v,t) # tangential velocity
                     dn   = np.dot(d,n)
