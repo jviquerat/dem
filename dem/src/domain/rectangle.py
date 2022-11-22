@@ -24,15 +24,15 @@ def domain_distance(a, b, c, d, x):
 
 ### ************************************************
 ### Collision forces
-@jit(cache=True, nopython=True, fastmath=True)
+@jit(cache=True, fastmath=True)
 def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, cj, n_coll):
 
-    k_n = np.zeros((n_coll))
+    k_n  = np.zeros((n_coll))
     nu_n = np.zeros((n_coll))
-    k_t = np.zeros((n_coll))
+    k_t  = np.zeros((n_coll))
     nu_t = np.zeros((n_coll))
-    vn = np.zeros((n_coll), np.float32)
-    vt = np.zeros((n_coll), np.float32)
+    vn   = np.zeros((n_coll), np.float32)
+    vt   = np.zeros((n_coll), np.float32)
 
     # normal stiffness
     k_n[:]  = (4.0/3.0)*np.sqrt(r[ci[:]])/(p_sigma[ci[:]] + d_sigma)
@@ -130,7 +130,7 @@ class rectangle(base_domain):
             dist = domain_distance(self.a, self.b, self.c, self.d, p.x[i,:])
 
             for j in range(4):
-                dx = dist[j] - p.r[i]   # relative distance
+                dx = dist[j] - p.r[i] # relative distance
 
                 if (dx < 0.0):
                     ci = np.append(ci, i)
