@@ -122,27 +122,15 @@ class rectangle(base_domain):
     ### Compute collisions with a particle
     def collisions(self, p):
 
-        n  = np.zeros((2), dtype=float) # normal  to border
-        t  = np.zeros((2), dtype=float) # tangent to border
-        x  = np.zeros((2), dtype=float) # position
-        d  = np.zeros((2), dtype=float) # displacement
-        v  = np.zeros((2), dtype=float) # velocity
-        vn = np.zeros((2), dtype=float) # normal     velocity
-        vt = np.zeros((2), dtype=float) # tangential velocity
-
-        #coll = np.empty((0,3), dtype=object)
         ci = np.empty((0), dtype=int)
         cj = np.empty((0), dtype=int)
         cd = np.empty((0), dtype=float)
 
         for i in range(p.n):
-
-            x[:] = p.x[i,:] # position
-            r    = p.r[i]   # radius
-            dist = domain_distance(self.a, self.b, self.c, self.d, x)
+            dist = domain_distance(self.a, self.b, self.c, self.d, p.x[i,:])
 
             for j in range(4):
-                dx = dist[j] - r   # relative distance
+                dx = dist[j] - p.r[i]   # relative distance
 
                 if (dx < 0.0):
                     ci = np.append(ci, i)
