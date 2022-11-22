@@ -27,10 +27,10 @@ def domain_distance(a, b, c, d, x):
 @jit(cache=True, fastmath=True)
 def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, cj, n_coll):
 
-    k_n  = np.zeros((n_coll))
-    nu_n = np.zeros((n_coll))
-    k_t  = np.zeros((n_coll))
-    nu_t = np.zeros((n_coll))
+    k_n  = np.zeros((n_coll), np.float32)
+    nu_n = np.zeros((n_coll), np.float32)
+    k_t  = np.zeros((n_coll), np.float32)
+    nu_t = np.zeros((n_coll), np.float32)
     vn   = np.zeros((n_coll), np.float32)
     vt   = np.zeros((n_coll), np.float32)
 
@@ -41,10 +41,10 @@ def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, 
     nu_n[:] = alpha[ci[:]]*np.sqrt(1.5*k_n*m[ci[:]])
 
     # tangential stiffness
-    k_t  = 8.0*np.sqrt(r[ci[:]])/(p_kappa[ci[:]] + d_kappa)
+    k_t[:]  = 8.0*np.sqrt(r[ci[:]])/(p_kappa[ci[:]] + d_kappa)
 
     # tangential damping
-    nu_t = alpha[ci[:]]*np.sqrt(k_t*m[ci[:]])
+    nu_t[:] = alpha[ci[:]]*np.sqrt(k_t*m[ci[:]])
 
     vn[:]   = v[ci[:],0]*n[cj[:],0] + v[ci[:],1]*n[cj[:],1]
     vt[:]   = v[ci[:],0]*t[cj[:],0] + v[ci[:],1]*t[cj[:],1]
