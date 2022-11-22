@@ -3,10 +3,67 @@ import math
 import numpy as np
 import matplotlib
 
+import numba as nb
+from   numba              import jit, njit
 from   matplotlib.patches import Rectangle
 
 # Custom imports
 from dem.src.domain.base_domain import *
+
+### ************************************************
+### Distance from domain to given coordinates
+@jit(cache=True, nopython=True, fastmath=True)
+def domain_distance(a, b, c, d, x):
+
+    dist    = np.zeros((4), np.float32)
+    dist[:] = np.absolute(a[:]*x[0] +
+                          b[:]*x[1] +
+                          c[:])/d[:]
+
+    return dist
+
+### ************************************************
+### Collision forces
+@jit(cache=True, nopython=True, fastmath=True)
+def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, cj, n_coll):
+
+    k_n = np.zeros((n_coll))
+    nu_n = np.zeros((n_coll))
+    k_t = np.zeros((n_coll))
+    nu_t = np.zeros((n_coll))
+    vn = np.zeros((n_coll), np.float32)
+    vt = np.zeros((n_coll), np.float32)
+
+    # normal stiffness
+    k_n[:]  = (4.0/3.0)*np.sqrt(r[ci[:]])/(p_sigma[ci[:]] + d_sigma)
+
+    # normal damping
+    nu_n[:] = alpha[ci[:]]*np.sqrt(1.5*k_n*m[ci[:]])
+
+    # tangential stiffness
+    k_t  = 8.0*np.sqrt(r[ci[:]])/(p_kappa[ci[:]] + d_kappa)
+
+    # tangential damping
+    nu_t = alpha[ci[:]]*np.sqrt(k_t*m[ci[:]])
+
+    vn[:]   = v[ci[:],0]*n[cj[:],0] + v[ci[:],1]*n[cj[:],1]
+    vt[:]   = v[ci[:],0]*t[cj[:],0] + v[ci[:],1]*t[cj[:],1]
+
+    # normal elastic force
+    f[ci[:],0] += np.power(dx[:],1.5)*k_n[:]*n[cj[:],0]
+    f[ci[:],1] += np.power(dx[:],1.5)*k_n[:]*n[cj[:],1]
+
+    # normal damping force
+    f[ci[:],0] -= np.power(dx[:],0.25)*nu_n[:]*vn[:]*n[cj[:],0]
+    f[ci[:],1] -= np.power(dx[:],0.25)*nu_n[:]*vn[:]*n[cj[:],1]
+
+    # tangential elastic force
+    #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
+
+    # tangential damping force
+    f[ci[:],0] -= np.power(dx[:],0.25)*nu_t[:]*vt[:]*t[cj[:],0]
+    f[ci[:],1] -= np.power(dx[:],0.25)*nu_t[:]*vt[:]*t[cj[:],1]
+
 
 ### ************************************************
 ### Class defining rectangle domain
@@ -36,7 +93,8 @@ class rectangle(base_domain):
         # Define a*x + b*y + c = 0 for all four borders
         # Ridge 0 is the bottom one, then we pursue in
         # trigonometric order. d array corresponds to the
-        # normalization parameter sqrt(a*a + b*b)
+        # normalization parameter sqrt(a*a + b*b).
+        # n and t are the normal and tangential vectors
         self.a = np.array([0.0, 1.0, 0.0, 1.0])
         self.b = np.array([1.0, 0.0, 1.0, 0.0])
         self.c = np.array([-self.y_min,-self.x_max,
@@ -46,17 +104,10 @@ class rectangle(base_domain):
                            [-1.0, 0.0],
                            [ 0.0,-1.0],
                            [ 1.0, 0.0]])
-
-    ### ************************************************
-    ### Distance to given coordinates
-    def distance(self, x):
-
-        dist    = np.zeros((4))
-        dist[:] = np.absolute(self.a[:]*x[0] +
-                              self.b[:]*x[1] +
-                              self.c[:])/self.d[:]
-
-        return dist
+        self.t = np.array([[ 1.0, 0.0],
+                           [ 0.0, 1.0],
+                           [-1.0, 0.0],
+                           [ 0.0,-1.0]])
 
     ### ************************************************
     ### Plot domain
@@ -71,69 +122,36 @@ class rectangle(base_domain):
     ### Compute collisions with a particle
     def collisions(self, p):
 
-        d_min = 1.0e8
+        n  = np.zeros((2), dtype=float) # normal  to border
+        t  = np.zeros((2), dtype=float) # tangent to border
+        x  = np.zeros((2), dtype=float) # position
+        d  = np.zeros((2), dtype=float) # displacement
+        v  = np.zeros((2), dtype=float) # velocity
+        vn = np.zeros((2), dtype=float) # normal     velocity
+        vt = np.zeros((2), dtype=float) # tangential velocity
 
-        n  = np.zeros((2)) # normal  to border
-        t  = np.zeros((2)) # tangent to border
-        x  = np.zeros((2)) # position
-        d  = np.zeros((2)) # displacement
-        v  = np.zeros((2)) # velocity
-        vn = np.zeros((2)) # normal     velocity
-        vt = np.zeros((2)) # tangential velocity
+        #coll = np.empty((0,3), dtype=object)
+        ci = np.empty((0), dtype=int)
+        cj = np.empty((0), dtype=int)
+        cd = np.empty((0), dtype=float)
 
-        coll = []
         for i in range(p.n):
 
             x[:] = p.x[i,:] # position
             r    = p.r[i]   # radius
-            dist = self.distance(x)
+            dist = domain_distance(self.a, self.b, self.c, self.d, x)
 
             for j in range(4):
                 dx = dist[j] - r   # relative distance
 
                 if (dx < 0.0):
-                    coll.append([i,j,dx])
+                    ci = np.append(ci, i)
+                    cj = np.append(cj, j)
+                    cd = np.append(cd, dx)
 
-        # n_coll = len(coll)
-        # k_n = np.zeros((n_coll))
-        # nu_n = np.zeros((n_coll))
-        # k_t = np.zeros((n_coll))
-        # nu_t = np.zeros((n_coll))
+        n_coll = len(ci)
+        if (n_coll == 0): return
 
-        for k in range(len(coll)):
-            i  = coll[k][0]
-            j  = coll[k][1]
-            dx = coll[k][2]
+        cd = np.abs(cd)
 
-            # normal stiffness
-            k_n  = (4.0/3.0)*math.sqrt(p.r[i])/(p.sigma[i] + self.sigma)
-
-            # normal damping
-            nu_n = p.alpha[i]*math.sqrt(1.5*k_n*p.m[i])
-
-            # tangential stiffness
-            k_t  = 8.0*math.sqrt(r)/(p.kappa[i] + self.kappa)
-
-            # tangential damping
-            nu_t = p.alpha[i]*math.sqrt(k_t*p.m[i])
-
-            n[:] = self.n[j,:] # normal  to boundary
-            t[0] = n[1]        # tangent to boundary
-            t[1] =-n[0]        # tangent to boundary
-            vn   = np.dot(p.v[i],n) # normal     velocity
-            vt   = np.dot(p.v[i],t) # tangential velocity
-            dn   = np.dot(p.d[i],n)
-            dt   = np.dot(p.d[i],t)
-            dx   = abs(dx)
-
-            # normal elastic force
-            p.f[i,:] += pow(dx,1.5)*k_n*n[:]
-
-            # normal damping force
-            p.f[i,:] -= pow(dx,0.25)*nu_n*vn*n[:]
-
-            # tangential elastic force
-            #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
-
-            # tangential damping force
-            p.f[i,:] -= pow(dx,0.25)*nu_t*vt*t[:]
+        forces(p.f, cd, p.r, p.alpha, p.sigma, p.kappa, self.sigma, self.kappa, p.m, p.v, self.n, self.t, ci, cj, n_coll)
