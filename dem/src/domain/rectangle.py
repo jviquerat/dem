@@ -105,14 +105,6 @@ class rectangle(base_domain):
             j  = coll[k][1]
             dx = coll[k][2]
 
-            #x[:] = p.x[i,:] # position
-            #r    = p.r[i]   # radius
-            #m    = p.m[i]     # mass
-            #s    = p.sigma[i] # sigma
-            #k    = p.kappa[i] # kappa
-            #v[:] = p.v[i,:]   # velocity
-            #d[:] = p.d[i,:]   # displacement
-
             # normal stiffness
             k_n  = (4.0/3.0)*math.sqrt(p.r[i])/(p.sigma[i] + self.sigma)
 
@@ -136,16 +128,12 @@ class rectangle(base_domain):
 
             # normal elastic force
             p.f[i,:] += pow(dx,1.5)*k_n*n[:]
-            #print(pow(dx,1.5)*k_n*n[:])
 
             # normal damping force
             p.f[i,:] -= pow(dx,0.25)*nu_n*vn*n[:]
-            #print(-pow(dx,0.25)*nu_n*vn*n[:])
 
             # tangential elastic force
             #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
-            #print(pow(dx,0.5)*k_t*dt*t[:])
 
             # tangential damping force
             p.f[i,:] -= pow(dx,0.25)*nu_t*vt*t[:]
-            #print(-pow(dx,0.25)*nu_t*vt*t[:])
