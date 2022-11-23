@@ -1,11 +1,9 @@
 # Generic imports
-import math
-import numpy as np
 import matplotlib
-
+import numpy as np
 import numba as nb
-from   numba              import jit, njit
-from   matplotlib.patches import Rectangle
+
+from matplotlib.patches import Rectangle
 
 # Custom imports
 from dem.src.domain.base_domain import *
@@ -22,8 +20,8 @@ def domain_distance(a, b, c, d, x, r, n):
 
     for i in range(n):
         for j in range(4):
-            dist = np.absolute(a[j]*x[i,0] + b[j]*x[i,1] + c[j])/d[j]
-            dx   = dist - r[i] # relative distance
+            dist = abs(a[j]*x[i,0] + b[j]*x[i,1] + c[j])/d[j]
+            dx   = dist - r[i]
 
             if (dx < 0.0):
                 ci = np.append(ci, np.uint16(i))
@@ -37,16 +35,18 @@ def domain_distance(a, b, c, d, x, r, n):
 @nb.njit(cache=True)
 def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, cj, n_coll):
 
+    # Ficticious parameters for domain
     rd = 1.0e8
     md = 1.0e8
-    d_alpha = 1.0
+    ad = 1.0
     vd = np.zeros((2))
 
+    # Loop on collisions
     for k in range(n_coll):
         i = ci[k]
         j = cj[k]
 
-        # return forces from collision parameters
+        # Return forces from collision parameters
         # - normal elastic
         # - normal damping,
         # - tangential elastic
@@ -56,7 +56,7 @@ def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, 
                                    m[i],   md,             # masses
                                    v[i,:], vd,             # velocities
                                    n[j,:], t[j,:],         # normal and tangent
-                                   alpha[i], d_alpha,      # restitution coeffs
+                                   alpha[i], ad,           # restitution coeffs
                                    p_sigma[i], d_sigma[j], # sigma coeffs
                                    p_kappa[i], d_kappa[j]) # kappa coeffs
 
@@ -126,7 +126,7 @@ class rectangle(base_domain):
                                 fill=False, color='r'))
 
     ### ************************************************
-    ### Compute collisions with a particle
+    ### Compute collisions with a set of particles
     def collisions(self, p):
 
         # Compute distances to domain boundaries

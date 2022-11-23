@@ -1,6 +1,3 @@
-# Generic imports
-import math
-
 ### ************************************************
 ### Base domain
 class base_domain():
