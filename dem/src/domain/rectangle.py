@@ -10,69 +10,6 @@ from dem.src.domain.base_domain import *
 from dem.src.core.collision import *
 
 ### ************************************************
-### Distance from domain to given coordinates
-@nb.njit(cache=True)
-def domain_distance(a, b, c, d, x, r, n):
-
-    ci = np.empty((0), np.uint16)
-    cj = np.empty((0), np.uint16)
-    cd = np.empty((0), np.float32)
-
-    for i in range(n):
-        for j in range(4):
-            dist = abs(a[j]*x[i,0] + b[j]*x[i,1] + c[j])/d[j]
-            dx   = dist - r[i]
-
-            if (dx < 0.0):
-                ci = np.append(ci, np.uint16(i))
-                cj = np.append(cj, np.uint16(j))
-                cd = np.append(cd, np.float32(abs(dx)))
-
-    return ci, cj, cd
-
-### ************************************************
-### Collision forces
-@nb.njit(cache=True)
-def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, cj, n_coll):
-
-    # Ficticious parameters for domain
-    rd = 1.0e8
-    md = 1.0e8
-    ad = 1.0
-    vd = np.zeros((2))
-
-    # Loop on collisions
-    for k in range(n_coll):
-        i = ci[k]
-        j = cj[k]
-
-        # Return forces from collision parameters
-        # - normal elastic
-        # - normal damping,
-        # - tangential elastic
-        # - tangential damping
-        fne, fnd, fte, ftd = hertz(dx[k],                  # penetration
-                                   r[i],   rd,             # radii
-                                   m[i],   md,             # masses
-                                   v[i,:], vd,             # velocities
-                                   n[j,:], t[j,:],         # normal and tangent
-                                   alpha[i], ad,           # restitution coeffs
-                                   p_sigma[i], d_sigma[j], # sigma coeffs
-                                   p_kappa[i], d_kappa[j]) # kappa coeffs
-
-        # normal elastic force
-        f[i,:] += fne[:]
-
-        # normal damping force
-        f[i,:] += fnd[:]
-
-        # tangential elastic force
-        #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
-
-        # tangential damping force
-        f[i,:] += ftd[:]
-
-### ************************************************
 ### Class defining rectangle domain
 class rectangle(base_domain):
     ### ************************************************
@@ -130,16 +67,77 @@ class rectangle(base_domain):
     def collisions(self, p):
 
         # Compute distances to domain boundaries
-        ci, cj, cd = domain_distance(self.a, self.b, self.c, self.d, p.x, p.r, p.n)
+        ci, cj, cd = rectangle_distance(self.a, self.b, self.c, self.d,
+                                     p.x, p.r, p.n)
 
         # Check if there are collisions
         n_coll = len(ci)
         if (n_coll == 0): return
 
-        # Generate arrays for force computation
-        #sigma = np.ones((n_coll))*self.sigma
-        #kappa = np.ones((n_coll))*self.kappa
-
         # Compute forces
-        forces(p.f, cd, p.r, p.alpha, p.sigma, p.kappa,
-               self.sigma, self.kappa, p.m, p.v, self.n, self.t, ci, cj, n_coll)
+        rectangle_forces(p.f, p.r, p.m, p.v, p.alpha, p.sigma, p.kappa, cd,
+                         self.sigma, self.kappa, self.n, self.t, ci, cj, n_coll)
+
+### ************************************************
+### Distance from rectangle domain to given coordinates
+@nb.njit(cache=True)
+def rectangle_distance(a, b, c, d, x, r, n):
+
+    ci = np.empty((0), np.uint16)
+    cj = np.empty((0), np.uint16)
+    cd = np.empty((0), np.float32)
+
+    for i in range(n):
+        for j in range(4):
+            dist = abs(a[j]*x[i,0] + b[j]*x[i,1] + c[j])/d[j]
+            dx   = dist - r[i]
+
+            if (dx < 0.0):
+                ci = np.append(ci, np.uint16(i))
+                cj = np.append(cj, np.uint16(j))
+                cd = np.append(cd, np.float32(abs(dx)))
+
+    return ci, cj, cd
+
+### ************************************************
+### Collision forces on particle in rectangle domain
+@nb.njit(cache=True)
+def rectangle_forces(f, p_r, p_m, p_v, p_alpha, p_sigma, p_kappa, dx,
+                     d_sigma, d_kappa, n, t, ci, cj, n_coll):
+
+    # Ficticious parameters for domain
+    d_r     = 1.0e8
+    d_m     = 1.0e8
+    d_alpha = 1.0
+    d_v     = np.zeros((2))
+
+    # Loop on collisions with domain
+    for k in range(n_coll):
+        i = ci[k]
+        j = cj[k]
+
+        # Return forces from collision parameters
+        # - normal elastic
+        # - normal damping,
+        # - tangential elastic
+        # - tangential damping
+        fne, fnd, fte, ftd = hertz(dx[k],                  # penetration
+                                   p_r[i],   d_r,          # radii
+                                   p_m[i],   d_m,          # masses
+                                   p_v[i,:], d_v,          # velocities
+                                   n[j,:], t[j,:],         # normal and tangent
+                                   p_alpha[i], d_alpha,    # restitution coeffs
+                                   p_sigma[i], d_sigma[j], # sigma coeffs
+                                   p_kappa[i], d_kappa[j]) # kappa coeffs
+
+        # normal elastic force
+        f[i,:] += fne[:]
+
+        # normal damping force
+        f[i,:] += fnd[:]
+
+        # tangential elastic force
+        f[i,:] += fte[:]
+
+        # tangential damping force
+        f[i,:] += ftd[:]
