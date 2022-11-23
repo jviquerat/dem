@@ -61,6 +61,7 @@ class particles:
     def set_particles(self):
 
         # Compute sigma coefficient
+        # sigma = (1.0 - sqrt(nu))/E
         self.sigma = np.ones((self.n))*(1.0-np.square(self.p[:]))/self.y[:]
 
         # Compute kappa coefficient

@@ -9,6 +9,7 @@ from   matplotlib.patches import Rectangle
 
 # Custom imports
 from dem.src.domain.base_domain import *
+from dem.src.core.collision import *
 
 ### ************************************************
 ### Distance from domain to given coordinates
@@ -33,43 +34,43 @@ def domain_distance(a, b, c, d, x, r, n):
 
 ### ************************************************
 ### Collision forces
-@njit(cache=True)
+@nb.njit(cache=True)
 def forces(f, dx, r, alpha, p_sigma, p_kappa, d_sigma, d_kappa, m, v, n, t, ci, cj, n_coll):
+
+    rd = 1.0e8
+    md = 1.0e8
+    d_alpha = 1.0
+    vd = np.zeros((2))
 
     for k in range(n_coll):
         i = ci[k]
         j = cj[k]
 
-        # normal stiffness
-        k_n  = (4.0/3.0)*np.sqrt(r[i])/(p_sigma[i] + d_sigma[i])
-
-        # normal damping
-        nu_n = alpha[i]*np.sqrt(1.5*k_n*m[i])
-
-        # tangential stiffness
-        k_t  = 8.0*np.sqrt(r[i])/(p_kappa[i] + d_kappa[i])
-
-        # tangential damping
-        nu_t = alpha[i]*np.sqrt(k_t*m[i])
-
-        vn   = v[i,0]*n[j,0] + v[i,1]*n[j,1]
-        vt   = v[i,0]*t[j,0] + v[i,1]*t[j,1]
+        # return forces from collision parameters
+        # - normal elastic
+        # - normal damping,
+        # - tangential elastic
+        # - tangential damping
+        fne, fnd, fte, ftd = hertz(dx[k],                  # penetration
+                                   r[i],   rd,             # radii
+                                   m[i],   md,             # masses
+                                   v[i,:], vd,             # velocities
+                                   n[j,:], t[j,:],         # normal and tangent
+                                   alpha[i], d_alpha,      # restitution coeffs
+                                   p_sigma[i], d_sigma[j], # sigma coeffs
+                                   p_kappa[i], d_kappa[j]) # kappa coeffs
 
         # normal elastic force
-        f[i,0] += np.power(dx[k],1.5)*k_n*n[j,0]
-        f[i,1] += np.power(dx[k],1.5)*k_n*n[j,1]
+        f[i,:] += fne[:]
 
         # normal damping force
-        f[i,0] -= np.power(dx[k],0.25)*nu_n*vn*n[j,0]
-        f[i,1] -= np.power(dx[k],0.25)*nu_n*vn*n[j,1]
+        f[i,:] += fnd[:]
 
         # tangential elastic force
         #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
 
         # tangential damping force
-        f[i,0] -= np.power(dx[k],0.25)*nu_t*vt*t[j,0]
-        f[i,1] -= np.power(dx[k],0.25)*nu_t*vt*t[j,1]
-
+        f[i,:] += ftd[:]
 
 ### ************************************************
 ### Class defining rectangle domain
@@ -93,8 +94,8 @@ class rectangle(base_domain):
         # Material (steel)
         self.y     = young   # young modulus
         self.p     = poisson # poisson ratio
-        self.sigma = (1.0 - self.p**2)/self.y
-        self.kappa = 2.0*(2.0 + self.p)*(1.0 - self.p)/self.y
+        self.sigma = np.ones((4))*(1.0 - self.p**2)/self.y
+        self.kappa = np.ones((4))*2.0*(2.0 + self.p)*(1.0 - self.p)/self.y
 
         # Define a*x + b*y + c = 0 for all four borders
         # Ridge 0 is the bottom one, then we pursue in
@@ -136,8 +137,9 @@ class rectangle(base_domain):
         if (n_coll == 0): return
 
         # Generate arrays for force computation
-        sigma = np.ones((n_coll))*self.sigma
-        kappa = np.ones((n_coll))*self.kappa
+        #sigma = np.ones((n_coll))*self.sigma
+        #kappa = np.ones((n_coll))*self.kappa
 
         # Compute forces
-        forces(p.f, cd, p.r, p.alpha, p.sigma, p.kappa, sigma, kappa, p.m, p.v, self.n, self.t, ci, cj, n_coll)
+        forces(p.f, cd, p.r, p.alpha, p.sigma, p.kappa,
+               self.sigma, self.kappa, p.m, p.v, self.n, self.t, ci, cj, n_coll)
