@@ -68,6 +68,7 @@ class particles:
         self.Gb = np.ones((self.n))*(2.0*(2.0+self.p[:])*(1.0-self.p[:])/self.y[:])
 
         # Pre-compute g coefficients
+        # g =-sqrt(5/6)*2*ln(e)/sqrt(pi**2 + ln(e)**2)
         self.g  = np.ones((self.n))*(-2.0*np.log(self.e[:]))
         self.g *= np.sqrt(1.0/(math.pi**2 + np.square(np.log(self.e[:]))))
         self.g *= math.sqrt(5.0/6.0)

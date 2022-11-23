@@ -27,6 +27,7 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     # tangential damping
     nu_t = g1*np.sqrt(k_t*m)
 
+    # normal and tangential velocities
     vn   = v1[0]*n[0] + v1[1]*n[1]
     vt   = v1[0]*t[0] + v1[1]*t[1]
 
