@@ -29,10 +29,10 @@ class rectangle(base_domain):
         self.y_max = y_max
 
         # Material (steel)
-        self.y     = young   # young modulus
-        self.p     = poisson # poisson ratio
-        self.sigma = np.ones((4))*(1.0 - self.p**2)/self.y
-        self.kappa = np.ones((4))*2.0*(2.0 + self.p)*(1.0 - self.p)/self.y
+        self.y  = young   # young modulus
+        self.p  = poisson # poisson ratio
+        self.Eb = np.ones((4))*(1.0 - self.p**2)/self.y
+        self.Gb = np.ones((4))*2.0*(2.0 + self.p)*(1.0 - self.p)/self.y
 
         # Define a*x + b*y + c = 0 for all four borders
         # Ridge 0 is the bottom one, then we pursue in
@@ -75,8 +75,8 @@ class rectangle(base_domain):
         if (n_coll == 0): return
 
         # Compute forces
-        rectangle_forces(p.f, p.r, p.m, p.v, p.g, p.sigma, p.kappa, cd,
-                         self.sigma, self.kappa, self.n, self.t, ci, cj, n_coll)
+        rectangle_forces(p.f, p.r, p.m, p.v, p.g, p.Eb, p.Gb, cd,
+                         self.Eb, self.Gb, self.n, self.t, ci, cj, n_coll)
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
@@ -102,8 +102,8 @@ def rectangle_distance(a, b, c, d, x, r, n):
 ### ************************************************
 ### Collision forces on particle in rectangle domain
 @nb.njit(cache=True)
-def rectangle_forces(f, p_r, p_m, p_v, p_g, p_sigma, p_kappa, dx,
-                     d_sigma, d_kappa, n, t, ci, cj, n_coll):
+def rectangle_forces(f, p_r, p_m, p_v, p_g, p_Eb, p_Gb, dx,
+                     d_Eb, d_Gb, n, t, ci, cj, n_coll):
 
     # Ficticious parameters for domain
     d_r     = 1.0e8
@@ -121,14 +121,14 @@ def rectangle_forces(f, p_r, p_m, p_v, p_g, p_sigma, p_kappa, dx,
         # - normal damping,
         # - tangential elastic
         # - tangential damping
-        fne, fnd, fte, ftd = hertz(dx[k],                  # penetration
-                                   p_r[i],   d_r,          # radii
-                                   p_m[i],   d_m,          # masses
-                                   p_v[i,:], d_v,          # velocities
-                                   n[j,:],   t[j,:],         # normal and tangent
-                                   p_g[i],   d_g,    # restitution coeffs
-                                   p_sigma[i], d_sigma[j], # sigma coeffs
-                                   p_kappa[i], d_kappa[j]) # kappa coeffs
+        fne, fnd, fte, ftd = hertz(dx[k],             # penetration
+                                   p_r[i],   d_r,     # radii
+                                   p_m[i],   d_m,     # masses
+                                   p_v[i,:], d_v,     # velocities
+                                   n[j,:],   t[j,:],  # normal and tangent
+                                   p_g[i],   d_g,     # restitution coeffs
+                                   p_Eb[i],  d_Eb[j], # Eb coeffs
+                                   p_Gb[i],  d_Gb[j]) # Gb coeffs
 
         # normal elastic force
         f[i,:] += fne[:]

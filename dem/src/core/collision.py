@@ -7,20 +7,22 @@ import numba as nb
 ### Compute forces given input parameters of collision
 @nb.njit(cache=True)
 def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
-          g1, g2, sigma1, sigma2, kappa1, kappa2):
+          g1, g2, Eb1, Eb2, Gb1, Gb2):
 
     # averaged values
-    r = 1.0/(1.0/r1 + 1.0/r2)
-    m = 1.0/(1.0/m1 + 1.0/m2)
+    r  = 1.0/(1.0/r1 + 1.0/r2)
+    m  = 1.0/(1.0/m1 + 1.0/m2)
+    eb = 1.0/(Eb1 + Eb2)
+    gb = 1.0/(Gb1 + Gb2)
 
     # normal stiffness
-    k_n  = (4.0/3.0)*np.sqrt(r)/(sigma1 + sigma2)
+    k_n  = (4.0/3.0)*np.sqrt(r)*eb
 
     # normal damping
     nu_n = g1*np.sqrt(1.5*k_n*m)
 
     # tangential stiffness
-    k_t  = 8.0*np.sqrt(r)/(kappa1 + kappa2)
+    k_t  = 8.0*np.sqrt(r)*gb
 
     # tangential damping
     nu_t = g1*np.sqrt(k_t*m)

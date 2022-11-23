@@ -59,12 +59,13 @@ class particles:
     ### Set particle coefficients from inputs
     def set_particles(self):
 
-        # Compute sigma coefficient
-        # sigma = (1.0 - sqrt(nu))/E
-        self.sigma = np.ones((self.n))*(1.0-np.square(self.p[:]))/self.y[:]
+        # Compute Eb coefficient
+        # Eb = (1.0 - p**2)/y
+        self.Eb = np.ones((self.n))*(1.0-np.square(self.p[:]))/self.y[:]
 
-        # Compute kappa coefficient
-        self.kappa = np.ones((self.n))*(2.0*(2.0+self.p[:])*(1.0-self.p[:])/self.y[:])
+        # Compute Gb coefficient
+        # Gb = 2*(2 + p)*(1 - p)/y
+        self.Gb = np.ones((self.n))*(2.0*(2.0+self.p[:])*(1.0-self.p[:])/self.y[:])
 
         # Pre-compute g coefficients
         self.g  = np.ones((self.n))*(-2.0*np.log(self.e[:]))
