@@ -16,6 +16,7 @@ class base_app():
 
         self.plt_show = False
         self.plt_png  = False
+        self.g        = 9.81
 
     ### ************************************************
     ### Iteration printings

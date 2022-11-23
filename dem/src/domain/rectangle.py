@@ -68,14 +68,14 @@ class rectangle(base_domain):
 
         # Compute distances to domain boundaries
         ci, cj, cd = rectangle_distance(self.a, self.b, self.c, self.d,
-                                     p.x, p.r, p.n)
+                                        p.x, p.r, p.n)
 
         # Check if there are collisions
         n_coll = len(ci)
         if (n_coll == 0): return
 
         # Compute forces
-        rectangle_forces(p.f, p.r, p.m, p.v, p.alpha, p.sigma, p.kappa, cd,
+        rectangle_forces(p.f, p.r, p.m, p.v, p.g, p.sigma, p.kappa, cd,
                          self.sigma, self.kappa, self.n, self.t, ci, cj, n_coll)
 
 ### ************************************************
@@ -102,13 +102,13 @@ def rectangle_distance(a, b, c, d, x, r, n):
 ### ************************************************
 ### Collision forces on particle in rectangle domain
 @nb.njit(cache=True)
-def rectangle_forces(f, p_r, p_m, p_v, p_alpha, p_sigma, p_kappa, dx,
+def rectangle_forces(f, p_r, p_m, p_v, p_g, p_sigma, p_kappa, dx,
                      d_sigma, d_kappa, n, t, ci, cj, n_coll):
 
     # Ficticious parameters for domain
     d_r     = 1.0e8
     d_m     = 1.0e8
-    d_alpha = 1.0
+    d_g     = 1.0
     d_v     = np.zeros((2))
 
     # Loop on collisions with domain
@@ -125,8 +125,8 @@ def rectangle_forces(f, p_r, p_m, p_v, p_alpha, p_sigma, p_kappa, dx,
                                    p_r[i],   d_r,          # radii
                                    p_m[i],   d_m,          # masses
                                    p_v[i,:], d_v,          # velocities
-                                   n[j,:], t[j,:],         # normal and tangent
-                                   p_alpha[i], d_alpha,    # restitution coeffs
+                                   n[j,:],   t[j,:],         # normal and tangent
+                                   p_g[i],   d_g,    # restitution coeffs
                                    p_sigma[i], d_sigma[j], # sigma coeffs
                                    p_kappa[i], d_kappa[j]) # kappa coeffs
 

@@ -66,7 +66,7 @@ class gravity(base_app):
         self.p.reset_forces()
         self.p.collisions()
         self.d.collisions(self.p)
-        self.p.gravity()
+        self.p.gravity(self.g)
 
     ### ************************************************
     ### Update positions

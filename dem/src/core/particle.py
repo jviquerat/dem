@@ -28,7 +28,6 @@ class particles:
         self.sigma       = (1.0-poisson**2)/young
         self.vol         = (4.0/3.0)*math.pi*radius**3
         self.mass        = self.vol*self.density
-        self.g           = 9.81
         self.store       = store
         self.color       = color
 
@@ -67,10 +66,10 @@ class particles:
         # Compute kappa coefficient
         self.kappa = np.ones((self.n))*(2.0*(2.0+self.p[:])*(1.0-self.p[:])/self.y[:])
 
-        # Compute alpha coefficient
-        self.alpha  = np.ones((self.n))*(-2.0*np.log(self.e[:]))
-        self.alpha *= np.sqrt(1.0/(math.pi**2 + np.square(np.log(self.e[:]))))
-        self.alpha *= math.sqrt(5.0/6.0)
+        # Pre-compute g coefficients
+        self.g  = np.ones((self.n))*(-2.0*np.log(self.e[:]))
+        self.g *= np.sqrt(1.0/(math.pi**2 + np.square(np.log(self.e[:]))))
+        self.g *= math.sqrt(5.0/6.0)
 
     ### ************************************************
     ### Reset forces
@@ -110,9 +109,9 @@ class particles:
 
     ### ************************************************
     ### Add gravity
-    def gravity(self):
+    def gravity(self, g):
 
-        self.a[:,1] -= self.m[:]*self.g
+        self.a[:,1] -= self.m[:]*g
 
     ### ************************************************
     ### Update positions using verlet method
