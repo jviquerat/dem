@@ -2,9 +2,9 @@
 import math
 
 # Custom imports
-from dem.src.core.particle import *
-from dem.src.domain.domain import *
-from dem.src.plot.plot     import *
+from dem.src.core.particles import *
+from dem.src.domain.domain  import *
+from dem.src.plot.plot      import *
 
 ### ************************************************
 ### Base app

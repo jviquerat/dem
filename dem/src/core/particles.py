@@ -2,6 +2,9 @@
 import math
 import numpy as np
 
+# Custom imports
+from dem.src.core.collision import *
+
 ### ************************************************
 ### Class defining array of particles
 class particles:
@@ -107,7 +110,9 @@ class particles:
     ### Compute collisions between particles
     def collisions(self):
 
-        pass
+        ci, cj, cd = particles_distances(self.n, self.x, self.r)
+        particles_collisions(ci, cj, cd, self.x, self.r, self.m,
+                             self.v, self.g, self.Eb, self.Gb, self.f)
 
     ### ************************************************
     ### Add gravity
@@ -128,3 +133,74 @@ class particles:
 
         if (self.store):
             self.history[it,:,:] = self.x[:,:]
+
+### ************************************************
+### Compute inter-particles distances and return those
+### which need to be accounted for
+@nb.njit(cache=True)
+def particles_distances(n, x, r):
+
+    ci = np.empty((0), np.uint16)
+    cj = np.empty((0), np.uint16)
+    cd = np.empty((0), np.float32)
+
+    for i in range(n):
+        for j in range(i+1,n):
+            dist = (x[i,0]-x[j,0])**2 + (x[i,1]-x[j,1])**2
+            dist = math.sqrt(dist)
+            dx   = dist - r[i] - r[j]
+
+            if (dx < 0.0):
+                ci = np.append(ci, np.uint16(i))
+                cj = np.append(cj, np.uint16(j))
+                cd = np.append(cd, np.float32(abs(dx)))
+
+    return ci, cj, cd
+
+### ************************************************
+### Compute collisions between particles
+@nb.njit(cache=True)
+def particles_collisions(ci, cj, cd, x, r, m, v, g, Eb, Gb, f):
+
+    n_coll = len(ci)
+
+    for k in range(n_coll):
+        i = ci[k]
+        j = cj[k]
+
+        # Compute normal and tangent
+        x_ij = x[j,:] - x[i,:]
+        n    = x_ij/(cd[k] + r[i] + r[j])
+        t    = np.zeros(2)
+        t[0] = n[1]
+        t[1] =-n[0]
+
+        # Return forces from collision parameters
+        # - normal elastic
+        # - normal damping,
+        # - tangential elastic
+        # - tangential damping
+        fne, fnd, fte, ftd = hertz(cd[k],          # penetration
+                                   r[i],   r[j],   # radii
+                                   m[i],   m[j],   # masses
+                                   v[i,:], v[j,:], # velocities
+                                   n,      t,      # normal and tangent
+                                   g[i],   g[j],   # restitution coeffs
+                                   Eb[i],  Eb[j],  # Eb coeffs
+                                   Gb[i],  Gb[j])  # Gb coeffs
+
+        # normal elastic force
+        f[i,:] -= fne[:]
+        f[j,:] += fne[:]
+
+        # normal damping force
+        f[i,:] -= fnd[:]
+        f[j,:] += fnd[:]
+
+        # tangential elastic force
+        f[i,:] += fte[:]
+        f[j,:] -= fte[:]
+
+        # tangential damping force
+        f[i,:] += ftd[:]
+        f[j,:] -= ftd[:]

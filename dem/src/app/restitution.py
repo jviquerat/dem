@@ -15,12 +15,12 @@ class restitution(base_app):
         super().__init__()
 
         self.name      = 'restitution'
-        self.t_max     = 3.0
+        self.t_max     = 10.0
         self.dt        = 0.000025
         self.nt        = int(self.t_max/self.dt)+1
         self.plot_freq = 1000
         self.plot_it   = 0
-        self.plot_show = False
+        self.plot_show = True
         self.plot_png  = False
 
         density = 2200    # steel
@@ -38,9 +38,9 @@ class restitution(base_app):
                            store       = True)
 
         # Restitution ratios
-        self.p.e[0] = 0.9
-        self.p.e[1] = 0.8
-        self.p.e[2] = 0.7
+        self.p.e[0] = 0.95
+        self.p.e[1] = 0.925
+        self.p.e[2] = 0.90
         self.p.set_particles()
 
         # Colors

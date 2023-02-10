@@ -7,7 +7,7 @@ from matplotlib.patches import Rectangle
 
 # Custom imports
 from dem.src.domain.base_domain import *
-from dem.src.core.collision import *
+from dem.src.core.collision     import *
 
 ### ************************************************
 ### Class defining rectangle domain

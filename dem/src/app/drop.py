@@ -1,21 +1,23 @@
 # Generic imports
 import os
 import math
+import random
 
 # Custom imports
 from dem.src.app.base_app import *
+from dem.src.plot.plot    import *
 
 ### ************************************************
-### Single sphere under gravity
-class gravity(base_app):
+### Dropping of several spheres to check inter-particle contacts
+class drop(base_app):
     ### ************************************************
     ### Constructor
     def __init__(self):
         super().__init__()
 
-        self.name      = 'gravity'
-        self.t_max     = 3.0
-        self.dt        = 0.000025
+        self.name      = 'drop'
+        self.t_max     = 10.0
+        self.dt        = 0.00002
         self.nt        = int(self.t_max/self.dt)+1
         self.plot_freq = 1000
         self.plot_it   = 0
@@ -26,7 +28,7 @@ class gravity(base_app):
         young   = 210.0e9 # steel
         poisson = 0.25    # steel
 
-        self.p = particles(n           = 1,
+        self.p = particles(n           = 10,
                            nt          = self.nt,
                            density     = density,
                            radius      = 0.05,
@@ -35,13 +37,28 @@ class gravity(base_app):
                            poisson     = poisson,
                            color       = "b",
                            store       = True)
+
+        # Restitution ratios
+        self.p.e[:] = 0.8
         self.p.set_particles()
+
+        # Colors
+        self.p.c[0] = 'b'
+        self.p.c[1] = 'r'
+        self.p.c[2] = 'y'
+        self.p.c[3] = 'b'
+        self.p.c[4] = 'r'
+        self.p.c[5] = 'y'
+        self.p.c[6] = 'b'
+        self.p.c[7] = 'r'
+        self.p.c[8] = 'y'
+        self.p.c[9] = 'b'
 
         self.d = domain_factory.create("rectangle",
                                        x_min      = 0.0,
-                                       x_max      = 1.0,
+                                       x_max      = 2.0,
                                        y_min      = 0.0,
-                                       y_max      = 0.5,
+                                       y_max      = 5.0,
                                        young      = young,
                                        poisson    = poisson)
 
@@ -56,8 +73,11 @@ class gravity(base_app):
 
         self.t = 0.0
 
-        self.p.x[:,0] = 0.5
-        self.p.x[:,1] = 0.4
+        for i in range(2):
+            for j in range(5):
+                self.p.x[5*i+j,0] = 0.8 + 0.2*i
+                self.p.x[5*i+j,1] = 1.0 + 0.5*j
+                self.p.v[5*i+j,0] = random.random()
 
     ### ************************************************
     ### Compute forces
