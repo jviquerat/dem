@@ -40,17 +40,17 @@ class particles:
     ### Reset arrays
     def reset(self):
 
-        self.m = np.ones((self.n), np.float32)*self.mass        # masses
-        self.r = np.ones((self.n), np.float32)*self.radius      # radii
-        self.x = np.zeros((self.n,2), np.float32)               # positions
-        self.d = np.zeros((self.n,2), np.float32)               # displacements
-        self.v = np.zeros((self.n,2), np.float32)               # velocities
-        self.a = np.zeros((self.n,2), np.float32)               # accelerations
-        self.f = np.zeros((self.n,2), np.float32)               # forces
-        self.e = np.ones((self.n), np.float32)*self.restitution # restitution coeff
-        self.y = np.ones((self.n), np.float32)*self.young       # young modulus
-        self.p = np.ones((self.n), np.float32)*self.poisson     # poisson ratio
-        self.c = [self.color]*self.n                # colors
+        self.m = np.ones((self.n),    np.float32)*self.mass        # masses
+        self.r = np.ones((self.n),    np.float32)*self.radius      # radii
+        self.x = np.zeros((self.n,2), np.float32)                  # positions
+        self.d = np.zeros((self.n,2), np.float32)                  # displacements
+        self.v = np.zeros((self.n,2), np.float32)                  # velocities
+        self.a = np.zeros((self.n,2), np.float32)                  # accelerations
+        self.f = np.zeros((self.n,2), np.float32)                  # forces
+        self.e = np.ones((self.n),    np.float32)*self.restitution # restitution coeff
+        self.y = np.ones((self.n),    np.float32)*self.young       # young modulus
+        self.p = np.ones((self.n),    np.float32)*self.poisson     # poisson ratio
+        self.c = [self.color]*self.n                               # colors
 
         # Optional storage
         if self.store:
@@ -172,8 +172,8 @@ def particles_collisions(ci, cj, cd, x, r, m, v, g, Eb, Gb, f):
         x_ij = x[j,:] - x[i,:]
         n    = x_ij/(cd[k] + r[i] + r[j])
         t    = np.zeros(2)
-        t[0] = n[1]
-        t[1] =-n[0]
+        t[0] =-n[1]
+        t[1] = n[0]
 
         # Return forces from collision parameters
         # - normal elastic
@@ -197,10 +197,10 @@ def particles_collisions(ci, cj, cd, x, r, m, v, g, Eb, Gb, f):
         f[i,:] -= fnd[:]
         f[j,:] += fnd[:]
 
-        # tangential elastic force
-        f[i,:] += fte[:]
-        f[j,:] -= fte[:]
+        # # tangential elastic force
+        # f[i,:] += fte[:]
+        # f[j,:] -= fte[:]
 
-        # tangential damping force
-        f[i,:] += ftd[:]
-        f[j,:] -= ftd[:]
+        # # tangential damping force
+        # f[i,:] += ftd[:]
+        # f[j,:] -= ftd[:]
