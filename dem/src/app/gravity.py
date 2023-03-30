@@ -35,7 +35,6 @@ class gravity(base_app):
                            poisson     = poisson,
                            color       = "b",
                            store       = True)
-        self.p.set_particles()
 
         self.d = domain_factory.create("rectangle",
                                        x_min      = 0.0,

@@ -76,7 +76,6 @@ class restitution(base_app):
     def forces(self):
 
         self.p.reset_forces()
-        self.p.collisions()
         self.d.collisions(self.p)
         self.p.gravity(self.g)
 
