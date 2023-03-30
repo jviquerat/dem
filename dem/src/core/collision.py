@@ -5,6 +5,9 @@ import numba as nb
 
 ### ************************************************
 ### Compute forces given input parameters of collision
+### Penetration dx is an absolute distance
+### Normals must be from 1 towards 2
+### Relative velocity is computed as v12 = v2-v1
 @nb.njit(cache=True)
 def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
           g1, g2, Eb1, Eb2, Gb1, Gb2):
@@ -14,6 +17,7 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     m  = 1.0/(1.0/m1 + 1.0/m2)
     eb = 1.0/(Eb1 + Eb2)
     gb = 1.0/(Gb1 + Gb2)
+    v  = v2 - v1
 
     # normal stiffness
     k_n  = (4.0/3.0)*np.sqrt(r)*eb
@@ -28,8 +32,8 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     nu_t = g1*np.sqrt(k_t*m)
 
     # normal and tangential velocities
-    vn   = v1[0]*n[0] + v1[1]*n[1]
-    vt   = v1[0]*t[0] + v1[1]*t[1]
+    vn   = v[0]*n[0] + v[1]*n[1]
+    vt   = v[0]*t[0] + v[1]*t[1]
 
     # forces
     fne = np.zeros((2))
@@ -52,7 +56,7 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
 
     # tangential damping force
-    ftd[0] =-dx025*nu_t*vt*t[0]
-    ftd[1] =-dx025*nu_t*vt*t[1]
+    #ftd[0] =-dx025*nu_t*vt*t[0]
+    #ftd[1] =-dx025*nu_t*vt*t[1]
 
     return fne, fnd, fte, ftd

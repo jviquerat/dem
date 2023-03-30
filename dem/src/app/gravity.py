@@ -6,7 +6,7 @@ import math
 from dem.src.app.base_app import *
 
 ### ************************************************
-### Single sphere under gravity
+### Single sphere under gravity with perfect restitution
 class gravity(base_app):
     ### ************************************************
     ### Constructor

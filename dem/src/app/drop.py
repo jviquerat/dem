@@ -16,7 +16,7 @@ class drop(base_app):
         super().__init__()
 
         self.name      = 'drop'
-        self.t_max     = 6.0
+        self.t_max     = 10.0
         self.dt        = 0.00002
         self.nt        = int(self.t_max/self.dt)+1
         self.plot_freq = 1000
@@ -28,19 +28,19 @@ class drop(base_app):
         young   = 210.0e9 # steel
         poisson = 0.25    # steel
 
-        self.p = particles(n           = 100,
+        self.n_row = 25 # nb of particles on a row at start
+        self.n_col = 35 # nb of particles on a col at start
+        self.radius = 0.025
+
+        self.p = particles(n           = self.n_row*self.n_col,
                            nt          = self.nt,
                            density     = density,
-                           radius      = 0.05,
-                           restitution = 1.0,
+                           radius      = self.radius,
+                           restitution = 0.9,
                            young       = young,
                            poisson     = poisson,
                            color       = "b",
                            store       = False)
-
-        # Restitution ratios
-        self.p.e[:] = 0.5
-        self.p.set_particles()
 
         # Colors
         colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])
@@ -64,11 +64,12 @@ class drop(base_app):
     def reset(self):
 
         self.t = 0.0
+        sep = 4.0*self.radius
 
-        for i in range(10):
-            for j in range(10):
-                self.p.x[10*i+j,0] = 0.1 + 0.2*i + 0.05*random.random()
-                self.p.x[10*i+j,1] = 2.0 + 0.2*j
+        for i in range(self.n_row):
+            for j in range(self.n_col):
+                self.p.x[self.n_col*i+j,0] = sep + sep*i + self.radius*random.random()
+                self.p.x[self.n_col*i+j,1] = 10*sep + sep*j
 
     ### ************************************************
     ### Compute forces

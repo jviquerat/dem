@@ -44,10 +44,14 @@ class rectangle(base_domain):
         self.c = np.array([-self.y_min,-self.x_max,
                            -self.y_max,-self.x_min])
         self.d = np.array([1.0, 1.0, 1.0, 1.0])
+
+        # Inward normals
         self.n = np.array([[ 0.0, 1.0],
                            [-1.0, 0.0],
                            [ 0.0,-1.0],
                            [ 1.0, 0.0]])
+
+        # Trigonometric direction tangents
         self.t = np.array([[ 1.0, 0.0],
                            [ 0.0, 1.0],
                            [-1.0, 0.0],
@@ -125,19 +129,19 @@ def rectangle_forces(f, p_r, p_m, p_v, p_g, p_Eb, p_Gb, dx,
                                    p_r[i],   d_r,     # radii
                                    p_m[i],   d_m,     # masses
                                    p_v[i,:], d_v,     # velocities
-                                   n[j,:],   t[j,:],  # normal and tangent
+                                  -n[j,:],   t[j,:],  # normal and tangent
                                    p_g[i],   d_g,     # restitution coeffs
                                    p_Eb[i],  d_Eb[j], # Eb coeffs
                                    p_Gb[i],  d_Gb[j]) # Gb coeffs
 
         # normal elastic force
-        f[i,:] += fne[:]
+        f[i,:] -= fne[:]
 
         # normal damping force
-        f[i,:] += fnd[:]
+        f[i,:] -= fnd[:]
 
         # tangential elastic force
-        f[i,:] += fte[:]
+        #f[i,:] += fte[:]
 
         # tangential damping force
-        f[i,:] += ftd[:]
+        #f[i,:] += ftd[:]
