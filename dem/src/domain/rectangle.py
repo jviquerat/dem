@@ -141,7 +141,7 @@ def rectangle_forces(f, p_r, p_m, p_v, p_g, p_Eb, p_Gb, dx,
         f[i,:] -= fnd[:]
 
         # tangential elastic force
-        #f[i,:] += fte[:]
+        f[i,:] -= fte[:]
 
         # tangential damping force
-        #f[i,:] += ftd[:]
+        f[i,:] -= ftd[:]

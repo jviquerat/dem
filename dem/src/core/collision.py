@@ -17,6 +17,8 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     m  = 1.0/(1.0/m1 + 1.0/m2)
     eb = 1.0/(Eb1 + Eb2)
     gb = 1.0/(Gb1 + Gb2)
+
+    # relative velocity
     v  = v2 - v1
 
     # normal stiffness
@@ -35,6 +37,10 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     vn   = v[0]*n[0] + v[1]*n[1]
     vt   = v[0]*t[0] + v[1]*t[1]
 
+    # tangential displacement
+    # very simple approximation
+    dxt = vt*0.000025
+
     # forces
     fne = np.zeros((2))
     fnd = np.zeros((2))
@@ -42,6 +48,7 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     ftd = np.zeros((2))
 
     dx15  = pow(dx, 1.5)
+    dx05  = pow(dx, 0.5)
     dx025 = pow(dx, 0.25)
 
     # normal elastic force
@@ -53,10 +60,11 @@ def hertz(dx, r1, r2, m1, m2, v1, v2, n, t,
     fnd[1] =-dx025*nu_n*vn*n[1]
 
     # tangential elastic force
-    #p.f[i,:] -= pow(dx,0.5)*k_t*vt*0.00001*t[:]
+    fte[0] =-dx05*k_t*dxt*t[0]
+    fte[1] =-dx05*k_t*dxt*t[1]
 
     # tangential damping force
-    #ftd[0] =-dx025*nu_t*vt*t[0]
-    #ftd[1] =-dx025*nu_t*vt*t[1]
+    ftd[0] =-dx025*nu_t*vt*t[0]
+    ftd[1] =-dx025*nu_t*vt*t[1]
 
     return fne, fnd, fte, ftd

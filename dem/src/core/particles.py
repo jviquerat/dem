@@ -197,10 +197,10 @@ def particles_collisions(ci, cj, cd, x, r, m, v, g, Eb, Gb, f):
         f[i,:] -= fnd[:]
         f[j,:] += fnd[:]
 
-        # # tangential elastic force
-        # f[i,:] += fte[:]
-        # f[j,:] -= fte[:]
+        # tangential elastic force
+        f[i,:] -= fte[:]
+        f[j,:] += fte[:]
 
-        # # tangential damping force
-        # f[i,:] += ftd[:]
-        # f[j,:] -= ftd[:]
+        # tangential damping force
+        f[i,:] -= ftd[:]
+        f[j,:] += ftd[:]
