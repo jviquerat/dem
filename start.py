@@ -3,9 +3,8 @@ import os
 import sys
 
 # Custom imports
-from dem.src.app.app       import *
-from dem.src.core.particle import *
-from dem.src.core.run      import *
+from dem.src.app.app  import *
+from dem.src.core.run import *
 
 ########################
 # Run dem simulation

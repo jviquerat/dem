@@ -4,10 +4,9 @@ import math
 
 # Custom imports
 from dem.src.app.base_app import *
-from dem.src.plot.plot    import *
 
 ### ************************************************
-### Single sphere under gravity
+### Single sphere under gravity with perfect restitution
 class gravity(base_app):
     ### ************************************************
     ### Constructor
@@ -20,7 +19,7 @@ class gravity(base_app):
         self.nt        = int(self.t_max/self.dt)+1
         self.plot_freq = 1000
         self.plot_it   = 0
-        self.plot_show = False
+        self.plot_show = True
         self.plot_png  = False
 
         density = 2200    # steel
@@ -36,21 +35,19 @@ class gravity(base_app):
                            poisson     = poisson,
                            color       = "b",
                            store       = True)
-        self.p.set_particles()
 
-        self.d = domain(dtype      = "rectangle",
-                        x_min      = 0.0,
-                        x_max      = 1.0,
-                        y_min      = 0.0,
-                        y_max      = 0.5,
-                        young      = young,
-                        poisson    = poisson)
+        self.d = domain_factory.create("rectangle",
+                                       x_min      = 0.0,
+                                       x_max      = 1.0,
+                                       y_min      = 0.0,
+                                       y_max      = 0.5,
+                                       young      = young,
+                                       poisson    = poisson)
 
         self.path = self.name
         os.makedirs(self.path, exist_ok=True)
 
         self.reset()
-        self.r_min = self.p.min_radius()
 
     ### ************************************************
     ### Reset app
@@ -68,7 +65,7 @@ class gravity(base_app):
         self.p.reset_forces()
         self.p.collisions()
         self.d.collisions(self.p)
-        self.p.gravity()
+        self.p.gravity(self.g)
 
     ### ************************************************
     ### Update positions

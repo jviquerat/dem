@@ -1,58 +1,56 @@
 # Generic imports
 import os
 import math
+import random
 
 # Custom imports
 from dem.src.app.base_app import *
 from dem.src.plot.plot    import *
 
 ### ************************************************
-### Comparison of spheres with different restitution coefficients
-class restitution(base_app):
+### Dropping of several spheres to check inter-particle contacts
+class drop(base_app):
     ### ************************************************
     ### Constructor
     def __init__(self):
         super().__init__()
 
-        self.name      = 'restitution'
+        self.name      = 'drop'
         self.t_max     = 10.0
-        self.dt        = 0.000025
+        self.dt        = 0.00002
         self.nt        = int(self.t_max/self.dt)+1
         self.plot_freq = 1000
         self.plot_it   = 0
-        self.plot_show = True
-        self.plot_png  = False
+        self.plot_show = False
+        self.plot_png  = True
 
         density = 2200    # steel
         young   = 210.0e9 # steel
         poisson = 0.25    # steel
 
-        self.p = particles(n           = 3,
+        self.n_row = 25 # nb of particles on a row at start
+        self.n_col = 35 # nb of particles on a col at start
+        self.radius = 0.025
+
+        self.p = particles(n           = self.n_row*self.n_col,
                            nt          = self.nt,
                            density     = density,
-                           radius      = 0.05,
-                           restitution = 1.0,
+                           radius      = self.radius,
+                           restitution = 0.9,
                            young       = young,
                            poisson     = poisson,
                            color       = "b",
-                           store       = True)
-
-        # Restitution ratios
-        self.p.e[0] = 0.95
-        self.p.e[1] = 0.925
-        self.p.e[2] = 0.90
-        self.p.set_particles()
+                           store       = False)
 
         # Colors
-        self.p.c[0] = 'b'
-        self.p.c[1] = 'r'
-        self.p.c[2] = 'y'
+        colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])
+        self.p.c = colors[np.random.randint(0,len(colors),size=self.p.n)]
 
         self.d = domain_factory.create("rectangle",
                                        x_min      = 0.0,
-                                       x_max      = 1.0,
+                                       x_max      = 5.0,
                                        y_min      = 0.0,
-                                       y_max      = 0.5,
+                                       y_max      = 5.0,
                                        young      = young,
                                        poisson    = poisson)
 
@@ -66,16 +64,19 @@ class restitution(base_app):
     def reset(self):
 
         self.t = 0.0
+        sep = 4.0*self.radius
 
-        self.p.x[:,0] = 0.5
-        self.p.x[:,1] = 0.4
-        self.p.v[:,0] = 1.0
+        for i in range(self.n_row):
+            for j in range(self.n_col):
+                self.p.x[self.n_col*i+j,0] = sep + sep*i + self.radius*random.random()
+                self.p.x[self.n_col*i+j,1] = 10*sep + sep*j
 
     ### ************************************************
     ### Compute forces
     def forces(self):
 
         self.p.reset_forces()
+        self.p.collisions()
         self.d.collisions(self.p)
         self.p.gravity(self.g)
 
@@ -99,4 +100,5 @@ class restitution(base_app):
     ### Finalize
     def finalize(self):
 
-        plot_history(self.p.n, self.p.history, self.p.c)
+        if (self.p.store):
+            plot_history(self.p.n, self.p.history, self.p.c)

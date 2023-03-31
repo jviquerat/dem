@@ -2,8 +2,9 @@
 import math
 
 # Custom imports
-from dem.src.core.particle import *
-from dem.src.core.domain   import *
+from dem.src.core.particles import *
+from dem.src.domain.domain  import *
+from dem.src.plot.plot      import *
 
 ### ************************************************
 ### Base app
@@ -15,6 +16,7 @@ class base_app():
 
         self.plt_show = False
         self.plt_png  = False
+        self.g        = 9.81
 
     ### ************************************************
     ### Iteration printings

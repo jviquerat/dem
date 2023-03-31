@@ -19,16 +19,15 @@ def plot(d, p, path, it, show=False, png=False):
     fig = plt.gcf()
     ax.set_xlim([d.x_min, d.x_max])
     ax.set_ylim([d.y_min, d.y_max])
-    if (d.dtype == "rectangle"):
-        ax.add_patch(Rectangle((d.x_min, d.y_min),
-                                d.x_max-d.x_min,
-                                d.y_max-d.y_min,
-                                fill=False, color='r'))
-    if (d.dtype == "circle"):
-        ax.add_patch(Circle((0.5*(d.x_max+d.x_min),
-                             0.5*(d.y_max+d.y_min)),
-                             0.5*(d.x_max-d.x_min),
-                             fill=False, color='r'))
+    #ax.add_patch(Rectangle((d.x_min, d.y_min),
+    #                       d.x_max-d.x_min,
+    #                       d.y_max-d.y_min,
+    #                       fill=False, color='r'))
+    # if (d.dtype == "circle"):
+    #     ax.add_patch(Circle((0.5*(d.x_max+d.x_min),
+    #                          0.5*(d.y_max+d.y_min)),
+    #                          0.5*(d.x_max-d.x_min),
+    #                          fill=False, color='r'))
 
     # Plot particles
     for i in range(p.n):
