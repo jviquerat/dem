@@ -30,7 +30,7 @@ def plot(d, p, path, it, show=False, png=False):
     #                          fill=False, color='r'))
 
     # Plot particles
-    for i in range(p.n):
+    for i in range(p.np):
         ax.add_patch(Circle((p.x[i,0], p.x[i,1]), p.r[i],
                             fill=True, color=p.c[i]))
 
@@ -43,16 +43,20 @@ def plot(d, p, path, it, show=False, png=False):
     plt.clf()
 
 ### ************************************************
-### Plot history of positions
-def plot_history(n, h, c):
+### Plot trajectory
+def plot_trajectory(np, h, c):
 
-    h = h.reshape((-1,2*n))
+    hx = h.data["x"]
+    hy = h.data["y"]
+
     plt.ioff()
     ax  = plt.gca()
     fig = plt.gcf()
-    for i in range(n):
-        ax.add_patch(Circle((h[0,2*i],h[0,2*i+1]), 0.01, color=c[i]))
-        plt.plot(h[:,2*i],h[:,2*i+1], color=c[i], linestyle='dashed')
+
+    for i in range(np):
+        ax.add_patch(Circle((hx[i,0], hy[i,0]), 0.01, color=c[i]))
+        plt.plot(hx[i,:], hy[i,:], color=c[i], linestyle='dashed')
+
     ax.set_aspect('equal')
     fig.tight_layout()
     plt.grid()

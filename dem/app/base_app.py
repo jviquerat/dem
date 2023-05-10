@@ -2,9 +2,10 @@
 import math
 
 # Custom imports
-from dem.src.core.particles import *
-from dem.src.domain.domain  import *
-from dem.src.plot.plot      import *
+from dem.src.core.particles    import *
+from dem.src.domain.domain     import *
+from dem.src.material.material import *
+from dem.src.utils.plot        import *
 
 ### ************************************************
 ### Base app
@@ -20,19 +21,19 @@ class base_app():
 
     ### ************************************************
     ### Iteration printings
-    def printings(self, it):
+    def printings(self):
 
-        print("# it = "+str(it)+", t = {0:.3f}".format(self.t)+" / {0:.3f}".format(self.t_max), end='\r')
+        print("# it = "+str(self.it)+", t = {0:.3f}".format(self.t)+" / {0:.3f}".format(self.t_max), end='\r')
 
     ### ************************************************
     ### Check stopping criterion
     def check_stop(self):
 
         compute = True
-        if (self.t >= self.t_max):
+        if (self.it >= self.nt):
             compute = False
             print('\n')
-            print('# Computation ended: t>t_max')
+            print('# Computation ended: it>=nt')
 
         return compute
 
@@ -46,16 +47,22 @@ class base_app():
     ### Update positions
     def update(self):
 
-        raise NotImplementedError
+        self.p.update(self.t, self.dt, self.it)
+        self.it += 1
+        self.t  += self.dt
 
     ### ************************************************
     ### Plot
-    def plot(self, it):
+    def plot(self):
 
-        raise NotImplementedError
+        if (self.it%self.plot_freq == 0):
+            plot(self.d, self.p, self.path, self.plot_it,
+                 show=self.plot_show, png=self.plot_png)
+            self.plot_it += 1
 
     ### ************************************************
     ### Finalize
     def finalize(self):
 
-        raise NotImplementedError
+        if (self.plot_trajectory):
+            plot_trajectory(self.p.np, self.p.buff, self.p.c)

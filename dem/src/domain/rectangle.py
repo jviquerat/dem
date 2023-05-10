@@ -6,8 +6,9 @@ import numba as nb
 from matplotlib.patches import Rectangle
 
 # Custom imports
-from dem.src.domain.base_domain import *
-from dem.src.core.collision     import *
+from dem.src.domain.base       import *
+from dem.src.core.collision    import *
+from dem.src.material.material import *
 
 ### ************************************************
 ### Class defining rectangle domain
@@ -15,12 +16,11 @@ class rectangle(base_domain):
     ### ************************************************
     ### Constructor
     def __init__(self,
-                 x_min   = 0.0,
-                 x_max   = 1.0,
-                 y_min   = 0.0,
-                 y_max   = 1.0,
-                 young   = 210.0e9,
-                 poisson = 0.25):
+                 x_min    = 0.0,
+                 x_max    = 1.0,
+                 y_min    = 0.0,
+                 y_max    = 1.0,
+                 material = "steel"):
 
         # External boundaries
         self.x_min = x_min
@@ -28,11 +28,15 @@ class rectangle(base_domain):
         self.y_min = y_min
         self.y_max = y_max
 
-        # Material (steel)
-        self.y  = young   # young modulus
-        self.p  = poisson # poisson ratio
-        self.Eb = np.ones((4))*(1.0 - self.p**2)/self.y
-        self.Gb = np.ones((4))*2.0*(2.0 + self.p)*(1.0 - self.p)/self.y
+        # Material
+        self.mat = material_factory.create(material)
+
+        # Ficticious parameters for domain
+        self.r     = 1.0e8
+        self.m     = 1.0e8
+        self.g     = 1.0
+        self.v     = np.zeros((2))
+        self.d     = np.zeros((2))
 
         # Define a*x + b*y + c = 0 for all four borders
         # Ridge 0 is the bottom one, then we pursue in
@@ -49,13 +53,13 @@ class rectangle(base_domain):
         self.n = np.array([[ 0.0, 1.0],
                            [-1.0, 0.0],
                            [ 0.0,-1.0],
-                           [ 1.0, 0.0]])
+                           [ 1.0, 0.0]], np.float32)
 
         # Trigonometric direction tangents
         self.t = np.array([[ 1.0, 0.0],
                            [ 0.0, 1.0],
                            [-1.0, 0.0],
-                           [ 0.0,-1.0]])
+                           [ 0.0,-1.0]], np.float32)
 
     ### ************************************************
     ### Plot domain
@@ -68,23 +72,22 @@ class rectangle(base_domain):
 
     ### ************************************************
     ### Compute collisions with a set of particles
-    def collisions(self, p):
+    def collisions(self, p, dt):
 
         # Compute distances to domain boundaries
         ci, cj, cd = rectangle_distance(self.a, self.b, self.c, self.d,
-                                        p.x, p.r, p.n)
+                                        p.x, p.r, p.np)
 
         # Check if there are collisions
         n_coll = len(ci)
         if (n_coll == 0): return
 
         # Compute forces
-        rectangle_forces(p.f, p.r, p.m, p.v, p.g, p.Eb, p.Gb, cd,
-                         self.Eb, self.Gb, self.n, self.t, ci, cj, n_coll)
+        rectangle_forces(p, self, dt, cd, ci, cj, n_coll)
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
-@nb.njit(cache=True)
+#@nb.njit(cache=True)
 def rectangle_distance(a, b, c, d, x, r, n):
 
     ci = np.empty((0), np.uint16)
@@ -105,43 +108,43 @@ def rectangle_distance(a, b, c, d, x, r, n):
 
 ### ************************************************
 ### Collision forces on particle in rectangle domain
-@nb.njit(cache=True)
-def rectangle_forces(f, p_r, p_m, p_v, p_g, p_Eb, p_Gb, dx,
-                     d_Eb, d_Gb, n, t, ci, cj, n_coll):
-
-    # Ficticious parameters for domain
-    d_r     = 1.0e8
-    d_m     = 1.0e8
-    d_g     = 1.0
-    d_v     = np.zeros((2))
+#@nb.njit(cache=True)
+def rectangle_forces(p, d, dt, dx, ci, cj, n_coll):
 
     # Loop on collisions with domain
     for k in range(n_coll):
         i = ci[k]
         j = cj[k]
 
+        # Compute normal and tangent
+        n    = np.zeros(2, np.float32)
+        n[:] =-d.n[j,:]
+
         # Return forces from collision parameters
         # - normal elastic
         # - normal damping,
         # - tangential elastic
         # - tangential damping
-        fne, fnd, fte, ftd = hertz(dx[k],             # penetration
-                                   p_r[i],   d_r,     # radii
-                                   p_m[i],   d_m,     # masses
-                                   p_v[i,:], d_v,     # velocities
-                                  -n[j,:],   t[j,:],  # normal and tangent
-                                   p_g[i],   d_g,     # restitution coeffs
-                                   p_Eb[i],  d_Eb[j], # Eb coeffs
-                                   p_Gb[i],  d_Gb[j]) # Gb coeffs
+        fn, ft = hertz(dx[k],            # penetration
+                       dt,               # timestep
+                       p.r[i],           # radius 1
+                       d.r,              # radius 2
+                       p.m[i],           # mass 1
+                       d.m,              # mass 2
+                       p.v[i,:],         # velocity 1
+                       d.v,              # velocity 2
+                       n[:],             # normal from 1 to 2
+                       p.mat[i].e_wall,  # restitution 1
+                       p.mat[i].e_wall,  # restitution 2
+                       p.mat[i].Y,       # effective young modulus 1
+                       d.mat.Y,          # effective young modulus 2
+                       p.mat[i].G,       # effective shear modulus 1
+                       d.mat.G,          # effective shear modulus 2
+                       p.mat[i].mu_wall, # static friction 1
+                       p.mat[i].mu_wall) # static friction 2
 
-        # normal elastic force
-        f[i,:] -= fne[:]
+        # normal force
+        p.f[i,:] -= fn[:]
 
-        # normal damping force
-        f[i,:] -= fnd[:]
-
-        # tangential elastic force
-        f[i,:] -= fte[:]
-
-        # tangential damping force
-        f[i,:] -= ftd[:]
+        # tangential force
+        p.f[i,:] -= ft[:]

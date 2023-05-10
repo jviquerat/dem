@@ -3,7 +3,9 @@ import math
 import numpy as np
 
 # Custom imports
-from dem.src.core.collision import *
+from dem.src.core.collision    import *
+from dem.src.material.material import *
+from dem.src.utils.buff        import *
 
 ### ************************************************
 ### Class defining array of particles
@@ -11,26 +13,19 @@ class particles:
     ### ************************************************
     ### Constructor
     def __init__(self,
-                 n           = 10,
+                 np          = 10,
                  nt          = 1000,
-                 density     = 1.0,
+                 material    = "steel",
                  radius      = 1.0,
-                 restitution = 0.8,
-                 young       = 100.0,
-                 poisson     = 0.1,
                  color       = "b",
                  store       = False):
 
-        self.n           = n
+        self.np          = np
         self.nt          = nt
-        self.density     = density
+        self.mtr         = material_factory.create(material)
         self.radius      = radius
-        self.restitution = restitution
-        self.young       = young
-        self.poisson     = poisson
-        self.sigma       = (1.0-poisson**2)/young
         self.vol         = (4.0/3.0)*math.pi*radius**3
-        self.mass        = self.vol*self.density
+        self.mass        = self.vol*self.mtr.density
         self.store       = store
         self.color       = color
 
@@ -40,41 +35,20 @@ class particles:
     ### Reset arrays
     def reset(self):
 
-        self.m = np.ones((self.n),    np.float32)*self.mass        # masses
-        self.r = np.ones((self.n),    np.float32)*self.radius      # radii
-        self.x = np.zeros((self.n,2), np.float32)                  # positions
-        self.d = np.zeros((self.n,2), np.float32)                  # displacements
-        self.v = np.zeros((self.n,2), np.float32)                  # velocities
-        self.a = np.zeros((self.n,2), np.float32)                  # accelerations
-        self.f = np.zeros((self.n,2), np.float32)                  # forces
-        self.e = np.ones((self.n),    np.float32)*self.restitution # restitution coeff
-        self.y = np.ones((self.n),    np.float32)*self.young       # young modulus
-        self.p = np.ones((self.n),    np.float32)*self.poisson     # poisson ratio
-        self.c = [self.color]*self.n                               # colors
+        self.m   = np.ones( (self.np),   np.float32)*self.mass   # masses
+        self.r   = np.ones( (self.np),   np.float32)*self.radius # radii
+        self.x   = np.zeros((self.np,2), np.float32)             # positions
+        self.d   = np.zeros((self.np,2), np.float32)             # displacements
+        self.v   = np.zeros((self.np,2), np.float32)             # velocities
+        self.a   = np.zeros((self.np,2), np.float32)             # accelerations
+        self.f   = np.zeros((self.np,2), np.float32)             # forces
+        self.mat = [self.mtr  ]*self.np                          # materials
+        self.c   = [self.color]*self.np                          # colors
 
         # Optional storage
         if self.store:
-            self.history = np.zeros((self.nt, self.n, 2), np.float32)
-
-        self.set_particles()
-
-    ### ************************************************
-    ### Set particle coefficients from inputs
-    def set_particles(self):
-
-        # Compute Eb coefficient
-        # Eb = (1.0 - p**2)/y
-        self.Eb = np.ones((self.n))*(1.0-np.square(self.p[:]))/self.y[:]
-
-        # Compute Gb coefficient
-        # Gb = 2*(2 + p)*(1 - p)/y
-        self.Gb = np.ones((self.n))*(2.0*(2.0+self.p[:])*(1.0-self.p[:])/self.y[:])
-
-        # Pre-compute g coefficients
-        # g =-sqrt(5/6)*2*ln(e)/sqrt(pi**2 + ln(e)**2)
-        self.g  = np.ones((self.n))*(-2.0*np.log(self.e[:]))
-        self.g *= np.sqrt(1.0/(math.pi**2 + np.square(np.log(self.e[:]))))
-        self.g *= math.sqrt(5.0/6.0)
+            self.names = ["x", "y", "vx", "vy"]
+            self.buff  = buff(self.np, self.nt, self.names)
 
     ### ************************************************
     ### Reset forces
@@ -108,21 +82,32 @@ class particles:
 
     ### ************************************************
     ### Compute collisions between particles
-    def collisions(self):
+    def collisions(self, dt):
 
-        ci, cj, cd = particles_distances(self.n, self.x, self.r)
-        particles_collisions(ci, cj, cd, self.x, self.r, self.m,
-                             self.v, self.g, self.Eb, self.Gb, self.f)
+        # Compute list of collisions
+        ci, cj, cd = list_collisions(self.np, self.x, self.r)
+
+        # Check if there are collisions
+        n_coll = len(ci)
+        if (n_coll == 0): return
+
+        # Compute forces
+        collide(self, dt, cd, ci, cj, n_coll)
 
     ### ************************************************
     ### Add gravity
     def gravity(self, g):
 
-        self.a[:,1] -= self.m[:]*g
+        self.f[:,1] -= self.m[:]*g
 
     ### ************************************************
     ### Update positions using verlet method
-    def update(self, dt, it):
+    def update(self, t, dt, it):
+
+        if (self.store):
+            self.buff.store( t, self.names,
+                            [self.x[:,0], self.x[:,1],
+                             self.v[:,0], self.v[:,1]])
 
         self.f[:,0] /= self.m[:]
         self.f[:,1] /= self.m[:]
@@ -131,14 +116,11 @@ class particles:
         self.x[:,:] += self.d[:,:]
         self.a[:,:]  = self.f[:,:]
 
-        if (self.store):
-            self.history[it,:,:] = self.x[:,:]
-
 ### ************************************************
-### Compute inter-particles distances and return those
-### which need to be accounted for
+### Compute inter-particles distances and return data
+### to compute collisions
 @nb.njit(cache=True)
-def particles_distances(n, x, r):
+def list_collisions(n, x, r):
 
     ci = np.empty((0), np.uint16)
     cj = np.empty((0), np.uint16)
@@ -159,48 +141,45 @@ def particles_distances(n, x, r):
 
 ### ************************************************
 ### Compute collisions between particles
-@nb.njit(cache=True)
-def particles_collisions(ci, cj, cd, x, r, m, v, g, Eb, Gb, f):
-
-    n_coll = len(ci)
+#@nb.njit(cache=True)
+def collide(p, dt, dx, ci, cj, n_coll):
 
     for k in range(n_coll):
         i = ci[k]
         j = cj[k]
 
         # Compute normal and tangent
-        x_ij = x[j,:] - x[i,:]
-        n    = x_ij/(cd[k] + r[i] + r[j])
-        t    = np.zeros(2)
-        t[0] =-n[1]
-        t[1] = n[0]
+        n    = np.zeros(2)
+        x_ij = p.x[j,:] - p.x[i,:]
+        n    = x_ij/(dx[k] + p.r[i] + p.r[j])
 
         # Return forces from collision parameters
         # - normal elastic
         # - normal damping,
         # - tangential elastic
         # - tangential damping
-        fne, fnd, fte, ftd = hertz(cd[k],          # penetration
-                                   r[i],   r[j],   # radii
-                                   m[i],   m[j],   # masses
-                                   v[i,:], v[j,:], # velocities
-                                   n,      t,      # normal and tangent
-                                   g[i],   g[j],   # restitution coeffs
-                                   Eb[i],  Eb[j],  # Eb coeffs
-                                   Gb[i],  Gb[j])  # Gb coeffs
+        fn, ft = hertz(dx[k],            # penetration
+                       dt,               # timestep
+                       p.r[i],           # radius 1
+                       p.r[j],           # radius 2
+                       p.m[i],           # mass 1
+                       p.m[j],           # mass 2
+                       p.v[i,:],         # velocity 1
+                       p.v[j,:],         # velocity 2
+                       n[:],             # normal from 1 to 2
+                       p.mat[i].e_part,  # restitution 1
+                       p.mat[j].e_part,  # restitution 2
+                       p.mat[i].Y,       # effective young modulus 1
+                       p.mat[j].Y,       # effective young modulus 2
+                       p.mat[i].G,       # effective shear modulus 1
+                       p.mat[j].G,       # effective shear modulus 2
+                       p.mat[i].mu_part, # static friction 1
+                       p.mat[j].mu_part) # static friction 2
 
-        # normal elastic force
-        f[i,:] -= fne[:]
-        f[j,:] += fne[:]
+        # normal force
+        p.f[i,:] -= fn[:]
+        p.f[j,:] += fn[:]
 
-        # normal damping force
-        f[i,:] -= fnd[:]
-        f[j,:] += fnd[:]
-
-        # tangential elastic force
-        f[i,:] -= fte[:]
-        f[j,:] += fte[:]
-
-        # tangential damping force
-        f[i,:] -= ftd[:]
-        f[j,:] += ftd[:]
+        # tangential force
+        p.f[i,:] -= ft[:]
+        p.f[j,:] += ft[:]
