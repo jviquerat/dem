@@ -3,7 +3,7 @@ import os
 import sys
 
 # Custom imports
-from dem.src.app.app  import *
+from dem.app.app      import *
 from dem.src.core.run import *
 
 ########################
