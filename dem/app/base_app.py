@@ -15,9 +15,10 @@ class base_app():
     ### Constructor
     def __init__(self):
 
-        self.plt_show = False
-        self.plt_png  = False
-        self.g        = 9.81
+        self.base_path = 'results'
+        self.plt_show  = False
+        self.plt_png   = False
+        self.g         = 9.81
 
     ### ************************************************
     ### Iteration printings

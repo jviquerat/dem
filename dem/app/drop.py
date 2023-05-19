@@ -60,7 +60,7 @@ class drop(base_app):
                                        y_max      = 5.0,
                                        material   = "steel")
 
-        self.path = self.name
+        self.path = self.base_path+'/'+self.name
         os.makedirs(self.path, exist_ok=True)
 
         self.reset()
