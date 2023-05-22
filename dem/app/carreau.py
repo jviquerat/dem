@@ -72,6 +72,8 @@ class carreau(base_app):
         self.p.x[:,1] = 0.25
         self.p.v[0,0] = 2.0
 
+        self.p.set_grid(self.d, 3, 3)
+
     ### ************************************************
     ### Compute forces
     def forces(self):

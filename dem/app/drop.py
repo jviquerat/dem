@@ -13,12 +13,12 @@ class drop(base_app):
     ### Constructor
     def __init__(self,
                  name            = 'drop',
-                 t_max           = 1.0,
+                 t_max           = 1.5,
                  dt              = 2.5e-5,
                  plot_freq       = 200,
-                 plot_show       = True,
-                 plot_trajectory = True,
-                 plot_png        = False):
+                 plot_show       = False,
+                 plot_trajectory = False,
+                 plot_png        = True):
         super().__init__()
 
         self.name            = name
@@ -32,8 +32,8 @@ class drop(base_app):
         self.nt      = int(self.t_max/self.dt)
         self.plot_it = 0
 
-        self.n_row  = 25 # nb of particles on a row at start
-        self.n_col  = 35 # nb of particles on a col at start
+        self.n_row  = 30 # nb of particles on a row at start
+        self.n_col  = 30 # nb of particles on a col at start
         self.radius = 0.025
 
         self.p = particles(np       = self.n_row*self.n_col,
@@ -77,6 +77,8 @@ class drop(base_app):
             for j in range(self.n_col):
                 self.p.x[self.n_col*i+j,0] = sep + sep*i + self.radius*random.random()
                 self.p.x[self.n_col*i+j,1] = 10*sep + sep*j
+
+        self.p.set_grid(self.d, 20, 20)
 
     ### ************************************************
     ### Compute forces

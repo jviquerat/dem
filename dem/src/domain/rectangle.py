@@ -83,11 +83,53 @@ class rectangle(base_domain):
         if (n_coll == 0): return
 
         # Compute forces
-        rectangle_forces(p, self, dt, cd, ci, cj, n_coll)
+        self.collide(p, dt, cd, ci, cj, n_coll)
+
+    ### ************************************************
+    ### Collision forces on particle in rectangle domain
+    def collide(self, p, dt, dx, ci, cj, n_coll):
+
+        # Loop on collisions with domain
+        for k in range(n_coll):
+            i = ci[k]
+            j = cj[k]
+
+            # Compute normal and tangent
+            n    = np.zeros(2, np.float32)
+            n[:] =-self.n[j,:]
+
+            # Return forces from collision parameters
+            # - normal elastic
+            # - normal damping,
+            # - tangential elastic
+            # - tangential damping
+            fn, ft = hertz(dx[k],            # penetration
+                           dt,               # timestep
+                           p.r[i],           # radius 1
+                           self.r,           # radius 2
+                           p.m[i],           # mass 1
+                           self.m,           # mass 2
+                           p.v[i,:],         # velocity 1
+                           self.v,           # velocity 2
+                           n[:],             # normal from 1 to 2
+                           p.mat[i].e_wall,  # restitution 1
+                           p.mat[i].e_wall,  # restitution 2
+                           p.mat[i].Y,       # effective young modulus 1
+                           self.mat.Y,       # effective young modulus 2
+                           p.mat[i].G,       # effective shear modulus 1
+                           self.mat.G,       # effective shear modulus 2
+                           p.mat[i].mu_wall, # static friction 1
+                           p.mat[i].mu_wall) # static friction 2
+
+            # normal force
+            p.f[i,:] -= fn[:]
+
+            # tangential force
+            p.f[i,:] -= ft[:]
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
-#@nb.njit(cache=True)
+@nb.njit(cache=True)
 def rectangle_distance(a, b, c, d, x, r, n):
 
     ci = np.empty((0), np.uint16)
@@ -105,46 +147,3 @@ def rectangle_distance(a, b, c, d, x, r, n):
                 cd = np.append(cd, np.float32(abs(dx)))
 
     return ci, cj, cd
-
-### ************************************************
-### Collision forces on particle in rectangle domain
-#@nb.njit(cache=True)
-def rectangle_forces(p, d, dt, dx, ci, cj, n_coll):
-
-    # Loop on collisions with domain
-    for k in range(n_coll):
-        i = ci[k]
-        j = cj[k]
-
-        # Compute normal and tangent
-        n    = np.zeros(2, np.float32)
-        n[:] =-d.n[j,:]
-
-        # Return forces from collision parameters
-        # - normal elastic
-        # - normal damping,
-        # - tangential elastic
-        # - tangential damping
-        fn, ft = hertz(dx[k],            # penetration
-                       dt,               # timestep
-                       p.r[i],           # radius 1
-                       d.r,              # radius 2
-                       p.m[i],           # mass 1
-                       d.m,              # mass 2
-                       p.v[i,:],         # velocity 1
-                       d.v,              # velocity 2
-                       n[:],             # normal from 1 to 2
-                       p.mat[i].e_wall,  # restitution 1
-                       p.mat[i].e_wall,  # restitution 2
-                       p.mat[i].Y,       # effective young modulus 1
-                       d.mat.Y,          # effective young modulus 2
-                       p.mat[i].G,       # effective shear modulus 1
-                       d.mat.G,          # effective shear modulus 2
-                       p.mat[i].mu_wall, # static friction 1
-                       p.mat[i].mu_wall) # static friction 2
-
-        # normal force
-        p.f[i,:] -= fn[:]
-
-        # tangential force
-        p.f[i,:] -= ft[:]

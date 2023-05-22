@@ -1,3 +1,6 @@
+from numba import float32
+from numba.experimental import jitclass
+
 ### ************************************************
 ### Class defining steel material
 ### Taken from:
@@ -5,13 +8,25 @@
 ###    and Operating Conditions on the Mixing Process in Rotary Drums:
 ###    Part 1—Determination of the DEM Parameters and Calibration Process",
 ###    J. Hlosta et al, Processes, 8, 222 (2020)
+spec = [
+    ('density', float32),
+    ('young',   float32),
+    ('poisson', float32),
+    ('mu_wall', float32),
+    ('mu_part', float32),
+    ('e_wall',  float32),
+    ('e_part',  float32),
+    ('Y',       float32),
+    ('G',       float32)
+]
+@jitclass(spec)
 class steel():
     ### ************************************************
     ### Constructor
     def __init__(self):
 
         # Density (kg/m3)
-        self.density = 7850
+        self.density = 7850.0
 
         # Young modulus (N/m2)
         self.young   = 210.0e9

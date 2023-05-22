@@ -17,7 +17,7 @@ class gravity(base_app):
                  plot_freq       = 200,
                  plot_show       = True,
                  plot_trajectory = True,
-                 plot_png        = True):
+                 plot_png        = False):
         super().__init__()
 
         self.name            = name

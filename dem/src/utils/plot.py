@@ -19,15 +19,15 @@ def plot(d, p, path, it, show=False, png=False):
     fig = plt.gcf()
     ax.set_xlim([d.x_min, d.x_max])
     ax.set_ylim([d.y_min, d.y_max])
-    #ax.add_patch(Rectangle((d.x_min, d.y_min),
-    #                       d.x_max-d.x_min,
-    #                       d.y_max-d.y_min,
-    #                       fill=False, color='r'))
-    # if (d.dtype == "circle"):
-    #     ax.add_patch(Circle((0.5*(d.x_max+d.x_min),
-    #                          0.5*(d.y_max+d.y_min)),
-    #                          0.5*(d.x_max-d.x_min),
-    #                          fill=False, color='r'))
+
+    # Plot grid
+    if (p.grid is not None):
+        for i in range(p.grid.nx+1):
+            plt.plot([p.grid.x_bins[i], p.grid.x_bins[i]],
+                     [p.grid.y_min,     p.grid.y_max])
+        for j in range(p.grid.ny+1):
+            plt.plot([p.grid.x_min,     p.grid.x_max],
+                     [p.grid.y_bins[j], p.grid.y_bins[j]])
 
     # Plot particles
     for i in range(p.np):
@@ -36,7 +36,6 @@ def plot(d, p, path, it, show=False, png=False):
 
     ax.set_aspect('equal')
     fig.tight_layout()
-    plt.grid()
     if png: fig.savefig(path+'/'+str(it)+'.png',
                         bbox_inches='tight')
     if show: plt.pause(0.0001)

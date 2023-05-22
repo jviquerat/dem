@@ -8,7 +8,7 @@ import numba as nb
 ### Penetration dx is an absolute distance
 ### Normals must be from 1 towards 2
 ### Relative velocity is computed as v12 = v2-v1
-#@nb.njit(cache=True)
+@nb.njit()#cache=True)
 def hertz(dx, dt, r1, r2, m1, m2, v1, v2, n,
           e1, e2, Y1, Y2, G1, G2, mu1, mu2):
 
