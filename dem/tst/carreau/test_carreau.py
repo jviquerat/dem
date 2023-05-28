@@ -14,7 +14,7 @@ def test_carreau():
     print("")
 
     # Run carreau app
-    app = carreau(t_max=0.2, dt=2.5e-5, plot_show=True, plot_trajectory=False)
+    app = carreau(t_max=0.2, dt=2.5e-5, plot_show=False, plot_trajectory=False)
     app.p.mtr.e_wall = 1.0
     run(app)
 

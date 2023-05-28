@@ -18,7 +18,8 @@ class particles:
                  material    = "steel",
                  radius      = 1.0,
                  color       = "b",
-                 store       = False):
+                 store       = False,
+                 search      = "linear"):
 
         self.np          = np
         self.nt          = nt
@@ -28,6 +29,7 @@ class particles:
         self.mass        = self.vol*self.mtr.density
         self.store       = store
         self.color       = color
+        self.search      = search
 
         self.reset()
 
@@ -81,18 +83,26 @@ class particles:
         return np.min(self.r)
 
     ### ************************************************
+    ### Compute maximal radius
+    def max_radius(self):
+
+        return np.max(self.r)
+
+    ### ************************************************
     ### Compute collisions between particles
     def collisions(self, dt):
 
-        # Compute list of collisions
-        ci, cj, cd = list_collisions(self.np, self.x, self.r)
+        if (self.search == "linear"):
 
-        # Check if there are collisions
-        n_coll = len(ci)
-        if (n_coll == 0): return
+            # Compute list of collisions
+            ci, cj, cd = list_collisions(self.np, self.x, self.r)
 
-        # Compute forces
-        collide(self, dt, cd, ci, cj, n_coll)
+            # Check if there are collisions
+            n_coll = len(ci)
+            if (n_coll == 0): return
+
+            # Compute forces
+            collide(self, dt, cd, ci, cj, n_coll)
 
     ### ************************************************
     ### Add gravity
