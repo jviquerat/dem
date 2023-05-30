@@ -66,24 +66,6 @@ class particles:
         return np.max(np.linalg.norm(self.v))
 
     ### ************************************************
-    ### Compute minimal mass
-    def min_mass(self):
-
-        return np.min(self.m)
-
-    ### ************************************************
-    ### Compute maximal stiffness
-    def max_stiffness(self):
-
-        return np.max((4.0/3.0)*self.y*np.sqrt(self.r))
-
-    ### ************************************************
-    ### Compute minimal radius
-    def min_radius(self):
-
-        return np.min(self.r)
-
-    ### ************************************************
     ### Compute maximal radius
     def max_radius(self):
 
