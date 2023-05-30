@@ -32,6 +32,7 @@ class particles:
         self.color       = color
         self.search      = search
         self.rad_coeff   = rad_coeff
+        self.ngbs        = None
 
         self.reset()
 
@@ -97,51 +98,36 @@ class particles:
 
         if (self.search == "linear"):
 
-            # Compute list of collisions
+            # Search for collisions linearly and compute forces
             linear_search(self.x,      self.r,  self.m, self.v,
                           self.e_part, self.Y,  self.G, self.mu_part,
                           self.f,      self.np, dt)
 
-            # # Check if there are collisions
-            # n_coll = len(ci)
-            # if (n_coll == 0): return
-
-            # # Compute forces
-            # collide(self, dt, ci, cj, n_coll)
-
         if (self.search == "nearest"):
 
-            pass
+            # If the list of neighbors is not set yet
+            if (self.ngbs is None):
+                self.d_ngb = 0.0
+                self.m_rad = self.rad_coeff*self.max_radius()
+                self.ngbi, self.ngbj = list_ngbs(self.np, self.x,
+                                                  self.r,  self.m_rad)
 
-            # # If the list is not set yet
-            # if (self.ngb == None):
-            #     self.d_ngb = 0.0
-            #     self.m_rad = self.rad_coeff*self.max_radius()
-            #     ci, cj, cd = linear_search(self.np, self.x, self.r, self.m_rad)
+            # If list is not valid anymore
+            v_max       = self.max_velocity()
+            self.d_ngb += 2.0*v_max*dt
+            if (self.d_ngb > 0.95*self.m_rad):
+                self.ngbi, self.ngbj = list_ngbs(self.np, self.x,
+                                                 self.r,  self.m_rad)
+                self.d_ngb = 0.0
 
-            # # If list is not valid anymore
-            # v_max = self.max_velocity()
-            # self.d_ngb += 2.0*v_max*dt
-            # if (self.d_ngb > 0.95*self.m_rad):
-            #     ci, cj = linear_search(self.np, self.x, self.r, self.m_rad)
-            #     self.d_ngb = 0.0
+            # Check if there are collisions
+            n_coll = len(self.ngbi)
+            if (n_coll == 0): return
 
-            # # Check if there are collisions
-            # n_coll = len(ci)
-            # if (n_coll == 0): return
-
-            # # Compute forces
-            # collide(self, dt, ci, cj, n_coll)
-
-            # # # Compute collisions
-            # # for i in range(self.np):
-            # #     for j in self.ngb[i]:
-            # #         dist = (self.x[i,0]-self.x[j,0])**2 + (self.x[i,1]-self.x[j,1])**2
-            # #         dist = math.sqrt(dist)
-            # #         dx   = dist - self.r[i] - self.r[j]
-            # #         if (dx < 0.0):
-            # #             dx = abs(dx)
-            # #             collide_single(self, dx, dt, i, j)
+            # Compute forces
+            collide_ngbs(self.x,      self.r,    self.m,    self.v,
+                         self.e_part, self.Y,    self.G,    self.mu_part,
+                         self.f,      self.ngbi, self.ngbj, n_coll, dt)
 
     ### ************************************************
     ### Reset neighbor particles
@@ -245,117 +231,76 @@ def linear_search(x, r, m, v, e_part, Y, G, mu_part, f, n, dt):
 ### that is equal to 0 for regular linear search detection,
 ### and that is equal to alpha*max_radius when generating
 ### nearest neighbor lists
-#@nb.njit(cache=True)
-# def linear_search(n, x, r, r_ref):
+@nb.njit(cache=True)
+def list_ngbs(n, x, r, r_ref):
 
-#     #ci = np.empty((0), np.uint16)
-#     #cj = np.empty((0), np.uint16)
-#     #cd = np.empty((0), np.float32)
+    ngbi = np.empty((0), np.uint16)
+    ngbj = np.empty((0), np.uint16)
+    for i in range(n):
+        for j in range(i+1,n):
+            dist = (x[i,0]-x[j,0])**2 + (x[i,1]-x[j,1])**2
+            dist = math.sqrt(dist)
+            dx   = dist - r[i] - r[j]
 
-#     for i in range(n):
-#         for j in range(i+1,n):
-#             dist = (x[i,0]-x[j,0])**2 + (x[i,1]-x[j,1])**2
-#             dist = math.sqrt(dist)
-#             dx   = dist - r[i] - r[j]
+            if (dx < r_ref):
+                ngbi = np.append(ngbi, np.uint16(i))
+                ngbj = np.append(ngbj, np.uint16(j))
 
-#             if (dx < r_ref):
-#                 ci = np.append(ci, np.uint16(i))
-#                 cj = np.append(cj, np.uint16(j))
-#                 #cd = np.append(cd, np.float32(abs(dx)))
-
-#     return ci, cj
+    return ngbi, ngbj
 
 ### ************************************************
-### Compute collisions between particles
-#@nb.njit(cache=True)
-def collide(p, dt, ci, cj, n_coll):
+### Compute inter-particles distances and return data
+### to compute collisions. r_ref is a reference radius
+### that is equal to 0 for regular linear search detection,
+### and that is equal to alpha*max_radius when generating
+### nearest neighbor lists
+@nb.njit(cache=True)
+def collide_ngbs(x, r, m, v, e_part, Y, G, mu_part, f, ngbi, ngbj, n, dt):
 
-    for k in range(n_coll):
-        i = ci[k]
-        j = cj[k]
+    for k in range(n):
+        i = ngbi[k]
+        j = ngbj[k]
 
-        dist = (p.x[i,0]-p.x[j,0])**2 + (p.x[i,1]-p.x[j,1])**2
-        dist = math.sqrt(dist)
-        dx   = abs(dist - p.r[i] - p.r[j])
+        dx = (x[i,0]-x[j,0])**2 + (x[i,1]-x[j,1])**2
+        dx = math.sqrt(dx)
+        dx = dx - r[i] - r[j]
 
-        # Compute normal and tangent
-        n    = np.zeros(2)
-        x_ij = p.x[j,:] - p.x[i,:]
-        n    = x_ij/(dx + p.r[i] + p.r[j])
+        # If particles intersect
+        if (dx < 0.0):
 
-        # Return forces from collision parameters
-        # - normal elastic
-        # - normal damping,
-        # - tangential elastic
-        # - tangential damping
-        fn, ft = hertz(dx,               # penetration
-                       dt,               # timestep
-                       p.r[i],           # radius 1
-                       p.r[j],           # radius 2
-                       p.m[i],           # mass 1
-                       p.m[j],           # mass 2
-                       p.v[i,:],         # velocity 1
-                       p.v[j,:],         # velocity 2
-                       n[:],             # normal from 1 to 2
-                       p.mat[i].e_part,  # restitution 1
-                       p.mat[j].e_part,  # restitution 2
-                       p.mat[i].Y,       # effective young modulus 1
-                       p.mat[j].Y,       # effective young modulus 2
-                       p.mat[i].G,       # effective shear modulus 1
-                       p.mat[j].G,       # effective shear modulus 2
-                       p.mat[i].mu_part, # static friction 1
-                       p.mat[j].mu_part) # static friction 2
+            # Compute normal
+            dx   = abs(dx)
+            nrm  = np.zeros(2)
+            x_ij = x[j,:] - x[i,:]
+            nrm  = x_ij/(dx + r[i] + r[j])
 
-        # normal force
-        p.f[i,:] -= fn[:]
-        p.f[j,:] += fn[:]
+            # Return forces from collision parameters
+            # - normal elastic
+            # - normal damping,
+            # - tangential elastic
+            # - tangential damping
+            fn, ft = hertz(dx,         # penetration
+                           dt,         # timestep
+                           r[i],       # radius 1
+                           r[j],       # radius 2
+                           m[i],       # mass 1
+                           m[j],       # mass 2
+                           v[i,:],     # velocity 1
+                           v[j,:],     # velocity 2
+                           nrm[:],     # normal from 1 to 2
+                           e_part[i],  # restitution 1
+                           e_part[j],  # restitution 2
+                           Y[i],       # effective young modulus 1
+                           Y[j],       # effective young modulus 2
+                           G[i],       # effective shear modulus 1
+                           G[j],       # effective shear modulus 2
+                           mu_part[i], # static friction 1
+                           mu_part[j]) # static friction 2
 
-        # tangential force
-        p.f[i,:] -= ft[:]
-        p.f[j,:] += ft[:]
+            # normal force
+            f[i,:] -= fn[:]
+            f[j,:] += fn[:]
 
-### ************************************************
-### Compute collisions between particles
-#@nb.njit(cache=True)
-def collide_single(p, dx, dt, i, j):
-
-    # dx = (p.x[i,0]-p.x[j,0])**2 + (p.x[i,1]-p.x[j,1])**2
-    # dx = math.sqrt(dx)
-    # if (dx - p.r[i] - p.r[j] > 0.0): return
-    # dx = abs(dx)
-
-    # Compute normal and tangent
-    n    = np.zeros(2)
-    x_ij = p.x[j,:] - p.x[i,:]
-    n    = x_ij/(dx + p.r[i] + p.r[j])
-
-    # Return forces from collision parameters
-    # - normal elastic
-    # - normal damping,
-    # - tangential elastic
-    # - tangential damping
-    fn, ft = hertz(dx,            # penetration
-                   dt,               # timestep
-                   p.r[i],           # radius 1
-                   p.r[j],           # radius 2
-                   p.m[i],           # mass 1
-                   p.m[j],           # mass 2
-                   p.v[i,:],         # velocity 1
-                   p.v[j,:],         # velocity 2
-                   n[:],             # normal from 1 to 2
-                   p.mat[i].e_part,  # restitution 1
-                   p.mat[j].e_part,  # restitution 2
-                   p.mat[i].Y,       # effective young modulus 1
-                   p.mat[j].Y,       # effective young modulus 2
-                   p.mat[i].G,       # effective shear modulus 1
-                   p.mat[j].G,       # effective shear modulus 2
-                   p.mat[i].mu_part, # static friction 1
-                   p.mat[j].mu_part) # static friction 2
-
-    # normal force
-    p.f[i,:] -= fn[:]
-    p.f[j,:] += fn[:]
-
-    # tangential force
-    p.f[i,:] -= ft[:]
-    p.f[j,:] += ft[:]
+            # tangential force
+            f[i,:] -= ft[:]
+            f[j,:] += ft[:]

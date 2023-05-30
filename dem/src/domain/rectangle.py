@@ -72,19 +72,11 @@ class rectangle(base_domain):
     ### Compute collisions with a set of particles
     def collisions(self, p, dt):
 
-        # Compute distances to domain boundaries
+        # Search for collisions linearly and compute forces
         linear_search(self.a, self.b, self.c, self.d, self.r, self.m,
                       self.v, self.mat.Y, self.mat.G, self.n,
                       p.x, p.r, p.m, p.v, p.e_wall, p.mu_wall,
                       p.Y, p.G, p.f, p.np, dt)
-
-
-        # # Check if there are collisions
-        # n_coll = len(ci)
-        # if (n_coll == 0): return
-
-        # # Compute forces
-        # collide(p, self, dt, cd, ci, cj, n_coll)
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates

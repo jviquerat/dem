@@ -37,7 +37,7 @@ class carreau(base_app):
                            radius      = 0.05,
                            color       = "b",
                            store       = True,
-                           search      = "linear")
+                           search      = "nearest")
 
         self.s1 = material_factory.create("steel")
         self.s1.e_part = 1.0

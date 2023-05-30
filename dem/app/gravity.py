@@ -46,7 +46,7 @@ class gravity(base_app):
                                        material   = "steel")
 
         # Set perfect restitution
-        self.p.mtr.e_wall = 1.0
+        self.p.e_wall[:] = 1.0
 
         self.path = self.base_path+'/'+self.name
         os.makedirs(self.path, exist_ok=True)
