@@ -14,6 +14,7 @@ class carreau(base_app):
                  name            = 'carreau',
                  t_max           = 1.0,
                  dt              = 2.5e-5,
+                 search          = "nearest",
                  plot_freq       = 200,
                  plot_show       = True,
                  plot_trajectory = False,
@@ -37,7 +38,7 @@ class carreau(base_app):
                            radius      = 0.05,
                            color       = "b",
                            store       = True,
-                           search      = "nearest")
+                           search      = search)
 
         self.s1 = material_factory.create("steel")
         self.s1.e_part = 1.0
