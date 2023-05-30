@@ -24,6 +24,9 @@ def plot(d, p, path, it, show=False, png=False):
     for i in range(p.np):
         ax.add_patch(Circle((p.x[i,0], p.x[i,1]), p.r[i],
                             fill=True, color=p.c[i]))
+        if (hasattr(p, 'm_rad')):
+            ax.add_patch(Circle((p.x[i,0], p.x[i,1]), p.m_rad,
+                                fill=False, color=p.c[i]))
 
     ax.set_aspect('equal')
     fig.tight_layout()

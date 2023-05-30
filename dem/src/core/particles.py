@@ -89,10 +89,6 @@ class particles:
             # Compute forces
             collide(self, dt, cd, ci, cj, n_coll)
 
-            if (n_coll > 0):
-                print(self.f)
-                exit()
-
         if (self.search == "nearest"):
 
             # If the list is not set yet
@@ -109,7 +105,6 @@ class particles:
                 self.d_ngb = 0.0
 
             # Compute collisions
-            n_coll = 0
             for i in range(self.np):
                 for j in self.ngb[i]:
                     dist = (self.x[i,0]-self.x[j,0])**2 + (self.x[i,1]-self.x[j,1])**2
@@ -117,12 +112,7 @@ class particles:
                     dx   = dist - self.r[i] - self.r[j]
                     if (dx < 0.0):
                         dx = abs(dx)
-                        n_coll += 1
                         collide_single(self, dx, dt, i, j)
-
-            # if (n_coll > 0):
-            #     print(self.f)
-            #     exit()29M
 
     ### ************************************************
     ### Reset neighbor particles
@@ -137,8 +127,10 @@ class particles:
         for k in range(len(ci)):
             i = ci[k]
             j = cj[k]
-            self.ngb[i] = np.append(self.ngb[i], np.uint(j))
-            self.ngb[j] = np.append(self.ngb[j], np.uint(i))
+            if (i > j):
+                self.ngb[i] = np.append(self.ngb[i], np.uint(j))
+            else:
+                self.ngb[j] = np.append(self.ngb[j], np.uint(i))
 
     ### ************************************************
     ### Add gravity
@@ -273,8 +265,8 @@ def collide_single(p, dx, dt, i, j):
 
     # normal force
     p.f[i,:] -= fn[:]
-    #p.f[j,:] += fn[:]
+    p.f[j,:] += fn[:]
 
     # tangential force
     p.f[i,:] -= ft[:]
-    #p.f[j,:] += ft[:]
+    p.f[j,:] += ft[:]
