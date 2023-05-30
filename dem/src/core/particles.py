@@ -92,19 +92,32 @@ class particles:
         if (self.search == "nearest"):
 
             # If the list is not set yet
-            if (self.ngb == None):
-                self.reset_ngb()
+            #if (self.ngb == None):
+            self.reset_ngb()
+
+            # Update if list is not valid anymore
+
+            # Compute collisions
+            for i in range(self.np):
+                for j in self.ngb[i]:
+                    collide_single(self, dt, i, j)
 
     ### ************************************************
     ### Reset neighbor particles
     def reset_ngb(self):
 
-        self.ngb = []
-        r_ref    = self.rad_coeff*self.max_radius
+        self.ngb = [None]*self.np
+        for i in range(self.np):
+            self.ngb[i] = np.empty((0), np.uint16)
+
+        r_ref      = self.rad_coeff*self.max_radius()
         ci, cj, cd = linear_search(self.np, self.x, self.r, r_ref)
 
-        #for i in range(len(ci)):
-
+        for k in range(len(ci)):
+            i = ci[k]
+            j = cj[k]
+            self.ngb[i] = np.append(self.ngb[i], np.uint(j))
+            self.ngb[j] = np.append(self.ngb[j], np.uint(i))
 
     ### ************************************************
     ### Add gravity
@@ -198,3 +211,49 @@ def collide(p, dt, dx, ci, cj, n_coll):
         # tangential force
         p.f[i,:] -= ft[:]
         p.f[j,:] += ft[:]
+
+### ************************************************
+### Compute collisions between particles
+#@nb.njit(cache=True)
+def collide_single(p, dt, i, j):
+
+    dx = (p.x[i,0]-p.x[j,0])**2 + (p.x[i,1]-p.x[j,1])**2
+    dx = math.sqrt(dx)
+    if (dx - p.r[i] - p.r[j] > 0.0): return
+    dx = abs(dx)
+
+    # Compute normal and tangent
+    n    = np.zeros(2)
+    x_ij = p.x[j,:] - p.x[i,:]
+    n    = x_ij/(dx + p.r[i] + p.r[j])
+
+    # Return forces from collision parameters
+    # - normal elastic
+    # - normal damping,
+    # - tangential elastic
+    # - tangential damping
+    fn, ft = hertz(dx,            # penetration
+                   dt,               # timestep
+                   p.r[i],           # radius 1
+                   p.r[j],           # radius 2
+                   p.m[i],           # mass 1
+                   p.m[j],           # mass 2
+                   p.v[i,:],         # velocity 1
+                   p.v[j,:],         # velocity 2
+                   n[:],             # normal from 1 to 2
+                   p.mat[i].e_part,  # restitution 1
+                   p.mat[j].e_part,  # restitution 2
+                   p.mat[i].Y,       # effective young modulus 1
+                   p.mat[j].Y,       # effective young modulus 2
+                   p.mat[i].G,       # effective shear modulus 1
+                   p.mat[j].G,       # effective shear modulus 2
+                   p.mat[i].mu_part, # static friction 1
+                   p.mat[j].mu_part) # static friction 2
+
+    # normal force
+    p.f[i,:] -= fn[:]
+    #p.f[j,:] += fn[:]
+
+    # tangential force
+    p.f[i,:] -= ft[:]
+    #p.f[j,:] += ft[:]

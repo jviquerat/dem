@@ -17,7 +17,7 @@ class carreau(base_app):
                  plot_freq       = 200,
                  plot_show       = True,
                  plot_trajectory = True,
-                 plot_png        = False):
+                 plot_png        = True):
         super().__init__()
 
         self.name            = name
@@ -36,7 +36,8 @@ class carreau(base_app):
                            material    = "steel",
                            radius      = 0.05,
                            color       = "b",
-                           store       = True)
+                           store       = True,
+                           search      = "linear")
 
         self.s1 = material_factory.create("steel")
         self.s1.e_part = 1.0
