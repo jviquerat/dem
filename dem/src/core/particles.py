@@ -89,6 +89,10 @@ class particles:
             # Compute forces
             collide(self, dt, cd, ci, cj, n_coll)
 
+            if (n_coll > 0):
+                print(self.f)
+                exit()
+
         if (self.search == "nearest"):
 
             # If the list is not set yet
@@ -98,9 +102,20 @@ class particles:
             # Update if list is not valid anymore
 
             # Compute collisions
+            n_coll = 0
             for i in range(self.np):
                 for j in self.ngb[i]:
-                    collide_single(self, dt, i, j)
+                    dist = (self.x[i,0]-self.x[j,0])**2 + (self.x[i,1]-self.x[j,1])**2
+                    dist = math.sqrt(dist)
+                    dx   = dist - self.r[i] - self.r[j]
+                    if (dx < 0.0):
+                        dx = abs(dx)
+                        n_coll += 1
+                        collide_single(self, dx, dt, i, j)
+
+            # if (n_coll > 0):
+            #     print(self.f)
+            #     exit()
 
     ### ************************************************
     ### Reset neighbor particles
@@ -215,12 +230,12 @@ def collide(p, dt, dx, ci, cj, n_coll):
 ### ************************************************
 ### Compute collisions between particles
 #@nb.njit(cache=True)
-def collide_single(p, dt, i, j):
+def collide_single(p, dx, dt, i, j):
 
-    dx = (p.x[i,0]-p.x[j,0])**2 + (p.x[i,1]-p.x[j,1])**2
-    dx = math.sqrt(dx)
-    if (dx - p.r[i] - p.r[j] > 0.0): return
-    dx = abs(dx)
+    # dx = (p.x[i,0]-p.x[j,0])**2 + (p.x[i,1]-p.x[j,1])**2
+    # dx = math.sqrt(dx)
+    # if (dx - p.r[i] - p.r[j] > 0.0): return
+    # dx = abs(dx)
 
     # Compute normal and tangent
     n    = np.zeros(2)
