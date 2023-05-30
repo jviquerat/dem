@@ -20,7 +20,7 @@ class particles:
                  color       = "b",
                  store       = False,
                  search      = "linear",
-                 rad_coeff   = 5.0):
+                 rad_coeff   = 2.0):
 
         self.np          = np
         self.nt          = nt
@@ -96,10 +96,17 @@ class particles:
         if (self.search == "nearest"):
 
             # If the list is not set yet
-            #if (self.ngb == None):
-            self.reset_ngb()
+            if (self.ngb == None):
+                self.d_ngb = 0.0
+                self.m_rad = self.rad_coeff*self.max_radius()
+                self.reset_ngb()
 
-            # Update if list is not valid anymore
+            # If list is not valid anymore
+            v_max = self.max_velocity()
+            self.d_ngb += 2.0*v_max*dt
+            if (self.d_ngb > 0.95*self.m_rad):
+                self.reset_ngb()
+                self.d_ngb = 0.0
 
             # Compute collisions
             n_coll = 0
@@ -115,7 +122,7 @@ class particles:
 
             # if (n_coll > 0):
             #     print(self.f)
-            #     exit()
+            #     exit()29M
 
     ### ************************************************
     ### Reset neighbor particles
@@ -125,8 +132,7 @@ class particles:
         for i in range(self.np):
             self.ngb[i] = np.empty((0), np.uint16)
 
-        r_ref      = self.rad_coeff*self.max_radius()
-        ci, cj, cd = linear_search(self.np, self.x, self.r, r_ref)
+        ci, cj, cd = linear_search(self.np, self.x, self.r, self.m_rad)
 
         for k in range(len(ci)):
             i = ci[k]
