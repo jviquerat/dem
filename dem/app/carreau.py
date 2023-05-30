@@ -42,8 +42,8 @@ class carreau(base_app):
         self.s1 = material_factory.create("steel")
         self.s1.e_part = 1.0
         self.s1.e_wall = 1.0
-        self.p.mat[0] = self.s1
-        self.p.mat[1] = self.s1
+        self.p.set_material(0, self.s1)
+        self.p.set_material(1, self.s1)
 
         # Colors
         self.p.c[0] = 'b'

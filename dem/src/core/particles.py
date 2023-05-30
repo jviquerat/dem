@@ -39,16 +39,23 @@ class particles:
     ### Reset arrays
     def reset(self):
 
-        self.m   = np.ones( (self.np),   np.float32)*self.mass   # masses
-        self.r   = np.ones( (self.np),   np.float32)*self.radius # radii
-        self.x   = np.zeros((self.np,2), np.float32)             # positions
-        self.d   = np.zeros((self.np,2), np.float32)             # displacements
-        self.v   = np.zeros((self.np,2), np.float32)             # velocities
-        self.a   = np.zeros((self.np,2), np.float32)             # accelerations
-        self.f   = np.zeros((self.np,2), np.float32)             # forces
-        self.mat = [self.mtr  ]*self.np                          # materials
-        self.c   = [self.color]*self.np                          # colors
-        self.ngb = None                                          # neighbors
+        self.m = np.ones( (self.np),   np.float32)*self.mass   # masses
+        self.r = np.ones( (self.np),   np.float32)*self.radius # radii
+        self.x = np.zeros((self.np,2), np.float32)             # positions
+        self.d = np.zeros((self.np,2), np.float32)             # displacements
+        self.v = np.zeros((self.np,2), np.float32)             # velocities
+        self.a = np.zeros((self.np,2), np.float32)             # accelerations
+        self.f = np.zeros((self.np,2), np.float32)             # forces
+
+        # default material parameters
+        self.e_wall  = np.ones((self.np), np.float32)*self.mtr.e_wall
+        self.mu_wall = np.ones((self.np), np.float32)*self.mtr.mu_wall
+        self.e_part  = np.ones((self.np), np.float32)*self.mtr.e_part
+        self.mu_part = np.ones((self.np), np.float32)*self.mtr.mu_part
+        self.Y       = np.ones((self.np), np.float32)*self.mtr.Y
+        self.G       = np.ones((self.np), np.float32)*self.mtr.G
+
+        self.c       = [self.color]*self.np # colors
 
         # Optional storage
         if self.store:
@@ -60,6 +67,17 @@ class particles:
     def reset_forces(self):
 
         self.f[:,:] = 0.0
+
+    ### ************************************************
+    ### Set particle i with material m
+    def set_material(self, i, m):
+
+        self.e_wall[i]  = m.e_wall
+        self.mu_wall[i] = m.mu_wall
+        self.e_part[i]  = m.e_part
+        self.mu_part[i] = m.mu_part
+        self.Y[i]       = m.Y
+        self.G[i]       = m.G
 
     ### ************************************************
     ### Compute maximal velocity
@@ -80,8 +98,9 @@ class particles:
         if (self.search == "linear"):
 
             # Compute list of collisions
-            linear_search(self.x,   self.r, self.m,  self.v,
-                          self.mat, self.f, self.np, dt)
+            linear_search(self.x,      self.r,  self.m, self.v,
+                          self.e_part, self.Y,  self.G, self.mu_part,
+                          self.f,      self.np, dt)
 
             # # Check if there are collisions
             # n_coll = len(ci)
@@ -170,9 +189,8 @@ class particles:
 ### that is equal to 0 for regular linear search detection,
 ### and that is equal to alpha*max_radius when generating
 ### nearest neighbor lists
-#@nb.njit(cache=True)
-
-def linear_search(x, r, m, v, mat, f, n, dt):
+@nb.njit(cache=True)
+def linear_search(x, r, m, v, e_part, Y, G, mu_part, f, n, dt):
 
     # Loop on particles twice
     for i in range(n):
@@ -195,23 +213,23 @@ def linear_search(x, r, m, v, mat, f, n, dt):
                 # - normal damping,
                 # - tangential elastic
                 # - tangential damping
-                fn, ft = hertz(dx,             # penetration
-                               dt,             # timestep
-                               r[i],           # radius 1
-                               r[j],           # radius 2
-                               m[i],           # mass 1
-                               m[j],           # mass 2
-                               v[i,:],         # velocity 1
-                               v[j,:],         # velocity 2
-                               nrm[:],         # normal from 1 to 2
-                               mat[i].e_part,  # restitution 1
-                               mat[j].e_part,  # restitution 2
-                               mat[i].Y,       # effective young modulus 1
-                               mat[j].Y,       # effective young modulus 2
-                               mat[i].G,       # effective shear modulus 1
-                               mat[j].G,       # effective shear modulus 2
-                               mat[i].mu_part, # static friction 1
-                               mat[j].mu_part) # static friction 2
+                fn, ft = hertz(dx,         # penetration
+                               dt,         # timestep
+                               r[i],       # radius 1
+                               r[j],       # radius 2
+                               m[i],       # mass 1
+                               m[j],       # mass 2
+                               v[i,:],     # velocity 1
+                               v[j,:],     # velocity 2
+                               nrm[:],     # normal from 1 to 2
+                               e_part[i],  # restitution 1
+                               e_part[j],  # restitution 2
+                               Y[i],       # effective young modulus 1
+                               Y[j],       # effective young modulus 2
+                               G[i],       # effective shear modulus 1
+                               G[j],       # effective shear modulus 2
+                               mu_part[i], # static friction 1
+                               mu_part[j]) # static friction 2
 
                 # normal force
                 f[i,:] -= fn[:]

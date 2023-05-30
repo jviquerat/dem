@@ -73,9 +73,10 @@ class rectangle(base_domain):
     def collisions(self, p, dt):
 
         # Compute distances to domain boundaries
-        linear_search(self.a, self.b, self.c, self.d,
-                      self.r, self.m, self.v, self.mat, self.n,
-                      p.x, p.r, p.m, p.v, p.mat, p.f, p.np, dt)
+        linear_search(self.a, self.b, self.c, self.d, self.r, self.m,
+                      self.v, self.mat.Y, self.mat.G, self.n,
+                      p.x, p.r, p.m, p.v, p.e_wall, p.mu_wall,
+                      p.Y, p.G, p.f, p.np, dt)
 
 
         # # Check if there are collisions
@@ -89,10 +90,11 @@ class rectangle(base_domain):
 ### Distance from rectangle domain to given coordinates
 ### Prefix d_ corresponds to domain
 ### Prefix p_ corresponds to particle
-#@nb.njit(cache=True)
-def linear_search(d_a, d_b, d_c, d_d,
-                  d_r, d_m, d_v, d_mat, d_n,
-                  p_x, p_r, p_m, p_v, p_mat, p_f, n, dt):
+@nb.njit(cache=True)
+def linear_search(d_a, d_b, d_c, d_d, d_r, d_m,
+                  d_v, d_mat_Y, d_mat_G, d_n,
+                  p_x, p_r, p_m, p_v, p_e_wall, p_mu_wall,
+                  p_Y, p_G, p_f, n, dt):
 
     # Loop on particles
     for i in range(n):
@@ -100,7 +102,7 @@ def linear_search(d_a, d_b, d_c, d_d,
         # Loop on rectangle sides
         for j in range(4):
             dx = abs(d_a[j]*p_x[i,0] + d_b[j]*p_x[i,1] + d_c[j])/d_d[j]
-            dx   = dx - p_r[i]    # 2
+            dx = dx - p_r[i]
 
             # If particle intersects boundary
             if (dx < 0.0):
@@ -115,23 +117,23 @@ def linear_search(d_a, d_b, d_c, d_d,
                 # - normal damping,
                 # - tangential elastic
                 # - tangential damping
-                fn, ft = hertz(dx,               # penetration
-                               dt,               # timestep
-                               p_r[i],           # radius 1
-                               d_r,              # radius 2
-                               p_m[i],           # mass 1
-                               d_m,              # mass 2
-                               p_v[i,:],         # velocity 1
-                               d_v,              # velocity 2
-                               nrm[:],           # normal from 1 to 2
-                               p_mat[i].e_wall,  # restitution 1
-                               p_mat[i].e_wall,  # restitution 2
-                               p_mat[i].Y,       # effective young modulus 1
-                               d_mat.Y,          # effective young modulus 2
-                               p_mat[i].G,       # effective shear modulus 1
-                               d_mat.G,          # effective shear modulus 2
-                               p_mat[i].mu_wall, # static friction 1
-                               p_mat[i].mu_wall) # static friction 2
+                fn, ft = hertz(dx,           # penetration
+                               dt,           # timestep
+                               p_r[i],       # radius 1
+                               d_r,          # radius 2
+                               p_m[i],       # mass 1
+                               d_m,          # mass 2
+                               p_v[i,:],     # velocity 1
+                               d_v,          # velocity 2
+                               nrm[:],       # normal from 1 to 2
+                               p_e_wall[i],  # restitution 1
+                               p_e_wall[i],  # restitution 2
+                               p_Y[i],       # effective young modulus 1
+                               d_mat_Y,      # effective young modulus 2
+                               p_G[i],       # effective shear modulus 1
+                               d_mat_G,      # effective shear modulus 2
+                               p_mu_wall[i], # static friction 1
+                               p_mu_wall[i]) # static friction 2
 
                 # normal force
                 p_f[i,:] -= fn[:]
