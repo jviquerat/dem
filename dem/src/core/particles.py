@@ -46,6 +46,7 @@ class particles:
         self.f   = np.zeros((self.np,2), np.float32)             # forces
         self.mat = [self.mtr  ]*self.np                          # materials
         self.c   = [self.color]*self.np                          # colors
+        self.ngb = None                                          # neighbors
 
         # Optional storage
         if self.store:
@@ -95,7 +96,7 @@ class particles:
         if (self.search == "linear"):
 
             # Compute list of collisions
-            ci, cj, cd = list_collisions(self.np, self.x, self.r)
+            ci, cj, cd = linear_search(self.np, self.x, self.r)
 
             # Check if there are collisions
             n_coll = len(ci)
@@ -103,6 +104,11 @@ class particles:
 
             # Compute forces
             collide(self, dt, cd, ci, cj, n_coll)
+
+        if (self.search == "nearest"):
+
+            if (self.ngb == None):
+                self.reset_ngb()
 
     ### ************************************************
     ### Add gravity
@@ -130,7 +136,7 @@ class particles:
 ### Compute inter-particles distances and return data
 ### to compute collisions
 @nb.njit(cache=True)
-def list_collisions(n, x, r):
+def linear_search(n, x, r):
 
     ci = np.empty((0), np.uint16)
     cj = np.empty((0), np.uint16)

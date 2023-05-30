@@ -75,20 +75,20 @@ class rectangle(base_domain):
     def collisions(self, p, dt):
 
         # Compute distances to domain boundaries
-        ci, cj, cd = rectangle_distance(self.a, self.b, self.c, self.d,
-                                        p.x, p.r, p.np)
+        ci, cj, cd = linear_search(self.a, self.b, self.c, self.d,
+                                   p.x, p.r, p.np)
 
         # Check if there are collisions
         n_coll = len(ci)
         if (n_coll == 0): return
 
         # Compute forces
-        rectangle_forces(p, self, dt, cd, ci, cj, n_coll)
+        collide(p, self, dt, cd, ci, cj, n_coll)
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
 #@nb.njit(cache=True)
-def rectangle_distance(a, b, c, d, x, r, n):
+def linear_search(a, b, c, d, x, r, n):
 
     ci = np.empty((0), np.uint16)
     cj = np.empty((0), np.uint16)
@@ -109,7 +109,7 @@ def rectangle_distance(a, b, c, d, x, r, n):
 ### ************************************************
 ### Collision forces on particle in rectangle domain
 #@nb.njit(cache=True)
-def rectangle_forces(p, d, dt, dx, ci, cj, n_coll):
+def collide(p, d, dt, dx, ci, cj, n_coll):
 
     # Loop on collisions with domain
     for k in range(n_coll):
