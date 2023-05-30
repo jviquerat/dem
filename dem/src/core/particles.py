@@ -19,7 +19,8 @@ class particles:
                  radius      = 1.0,
                  color       = "b",
                  store       = False,
-                 search      = "linear"):
+                 search      = "linear",
+                 rad_coeff   = 5.0):
 
         self.np          = np
         self.nt          = nt
@@ -30,6 +31,7 @@ class particles:
         self.store       = store
         self.color       = color
         self.search      = search
+        self.rad_coeff   = rad_coeff
 
         self.reset()
 
@@ -78,7 +80,7 @@ class particles:
         if (self.search == "linear"):
 
             # Compute list of collisions
-            ci, cj, cd = linear_search(self.np, self.x, self.r)
+            ci, cj, cd = linear_search(self.np, self.x, self.r, 0.0)
 
             # Check if there are collisions
             n_coll = len(ci)
@@ -89,8 +91,20 @@ class particles:
 
         if (self.search == "nearest"):
 
+            # If the list is not set yet
             if (self.ngb == None):
                 self.reset_ngb()
+
+    ### ************************************************
+    ### Reset neighbor particles
+    def reset_ngb(self):
+
+        self.ngb = []
+        r_ref    = self.rad_coeff*self.max_radius
+        ci, cj, cd = linear_search(self.np, self.x, self.r, r_ref)
+
+        #for i in range(len(ci)):
+
 
     ### ************************************************
     ### Add gravity
@@ -116,9 +130,12 @@ class particles:
 
 ### ************************************************
 ### Compute inter-particles distances and return data
-### to compute collisions
+### to compute collisions. r_ref is a reference radius
+### that is equal to 0 for regular linear search detection,
+### and that is equal to alpha*max_radius when generating
+### nearest neighbor lists
 @nb.njit(cache=True)
-def linear_search(n, x, r):
+def linear_search(n, x, r, r_ref):
 
     ci = np.empty((0), np.uint16)
     cj = np.empty((0), np.uint16)
@@ -130,7 +147,7 @@ def linear_search(n, x, r):
             dist = math.sqrt(dist)
             dx   = dist - r[i] - r[j]
 
-            if (dx < 0.0):
+            if (dx < r_ref):
                 ci = np.append(ci, np.uint16(i))
                 cj = np.append(cj, np.uint16(j))
                 cd = np.append(cd, np.float32(abs(dx)))
