@@ -34,9 +34,7 @@ class rectangle(base_domain):
         # Ficticious parameters for domain
         self.r     = 1.0e8
         self.m     = 1.0e8
-        self.g     = 1.0
         self.v     = np.zeros((2))
-        self.d     = np.zeros((2))
 
         # Define a*x + b*y + c = 0 for all four borders
         # Ridge 0 is the bottom one, then we pursue in
@@ -75,36 +73,71 @@ class rectangle(base_domain):
     def collisions(self, p, dt):
 
         # Compute distances to domain boundaries
-        ci, cj, cd = linear_search(self.a, self.b, self.c, self.d,
-                                   p.x, p.r, p.np)
+        linear_search(self.a, self.b, self.c, self.d,
+                      self.r, self.m, self.v, self.mat, self.n,
+                      p.x, p.r, p.m, p.v, p.mat, p.f, p.np, dt)
 
-        # Check if there are collisions
-        n_coll = len(ci)
-        if (n_coll == 0): return
 
-        # Compute forces
-        collide(p, self, dt, cd, ci, cj, n_coll)
+        # # Check if there are collisions
+        # n_coll = len(ci)
+        # if (n_coll == 0): return
+
+        # # Compute forces
+        # collide(p, self, dt, cd, ci, cj, n_coll)
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
+### Prefix d_ corresponds to domain
+### Prefix p_ corresponds to particle
 #@nb.njit(cache=True)
-def linear_search(a, b, c, d, x, r, n):
+def linear_search(d_a, d_b, d_c, d_d,
+                  d_r, d_m, d_v, d_mat, d_n,
+                  p_x, p_r, p_m, p_v, p_mat, p_f, n, dt):
 
-    ci = np.empty((0), np.uint16)
-    cj = np.empty((0), np.uint16)
-    cd = np.empty((0), np.float32)
-
+    # Loop on particles
     for i in range(n):
+
+        # Loop on rectangle sides
         for j in range(4):
-            dist = abs(a[j]*x[i,0] + b[j]*x[i,1] + c[j])/d[j]
-            dx   = dist - r[i]
+            dx = abs(d_a[j]*p_x[i,0] + d_b[j]*p_x[i,1] + d_c[j])/d_d[j]
+            dx   = dx - p_r[i]    # 2
 
+            # If particle intersects boundary
             if (dx < 0.0):
-                ci = np.append(ci, np.uint16(i))
-                cj = np.append(cj, np.uint16(j))
-                cd = np.append(cd, np.float32(abs(dx)))
 
-    return ci, cj, cd
+                # Compute normal
+                dx     = abs(dx)
+                nrm    = np.zeros(2, np.float32)
+                nrm[:] =-d_n[j,:]
+
+                # Return forces from collision parameters
+                # - normal elastic
+                # - normal damping,
+                # - tangential elastic
+                # - tangential damping
+                fn, ft = hertz(dx,               # penetration
+                               dt,               # timestep
+                               p_r[i],           # radius 1
+                               d_r,              # radius 2
+                               p_m[i],           # mass 1
+                               d_m,              # mass 2
+                               p_v[i,:],         # velocity 1
+                               d_v,              # velocity 2
+                               nrm[:],           # normal from 1 to 2
+                               p_mat[i].e_wall,  # restitution 1
+                               p_mat[i].e_wall,  # restitution 2
+                               p_mat[i].Y,       # effective young modulus 1
+                               d_mat.Y,          # effective young modulus 2
+                               p_mat[i].G,       # effective shear modulus 1
+                               d_mat.G,          # effective shear modulus 2
+                               p_mat[i].mu_wall, # static friction 1
+                               p_mat[i].mu_wall) # static friction 2
+
+                # normal force
+                p_f[i,:] -= fn[:]
+
+                # tangential force
+                p_f[i,:] -= ft[:]
 
 ### ************************************************
 ### Collision forces on particle in rectangle domain

@@ -80,8 +80,8 @@ class particles:
         if (self.search == "linear"):
 
             # Compute list of collisions
-            linear_search(self.np, self.x,   self.r, self.m,
-                          self.v,  self.mat, self.f, dt)
+            linear_search(self.x,   self.r, self.m,  self.v,
+                          self.mat, self.f, self.np, dt)
 
             # # Check if there are collisions
             # n_coll = len(ci)
@@ -172,9 +172,9 @@ class particles:
 ### nearest neighbor lists
 #@nb.njit(cache=True)
 
-def linear_search(n, x, r, m, v, mat, f, dt):
+def linear_search(x, r, m, v, mat, f, n, dt):
 
-    # Loop on particles
+    # Loop on particles twice
     for i in range(n):
         for j in range(i+1,n):
             dx = (x[i,0]-x[j,0])**2 + (x[i,1]-x[j,1])**2
@@ -182,9 +182,9 @@ def linear_search(n, x, r, m, v, mat, f, dt):
             dx = dx - r[i] - r[j]
 
             # If particles intersect
-            if (dx < 0):
+            if (dx < 0.0):
 
-                # Compute normal and tangent
+                # Compute normal
                 dx   = abs(dx)
                 nrm  = np.zeros(2)
                 x_ij = x[j,:] - x[i,:]
@@ -195,8 +195,8 @@ def linear_search(n, x, r, m, v, mat, f, dt):
                 # - normal damping,
                 # - tangential elastic
                 # - tangential damping
-                fn, ft = hertz(dx,               # penetration
-                               dt,               # timestep
+                fn, ft = hertz(dx,             # penetration
+                               dt,             # timestep
                                r[i],           # radius 1
                                r[j],           # radius 2
                                m[i],           # mass 1
