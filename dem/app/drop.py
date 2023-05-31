@@ -18,7 +18,7 @@ class drop(base_app):
                  plot_freq       = 1000,
                  plot_show       = False,
                  plot_trajectory = False,
-                 plot_png        = True):
+                 plot_png        = False):
         super().__init__()
 
         self.name            = name
@@ -42,7 +42,7 @@ class drop(base_app):
                            radius   = self.radius,
                            color    = "b",
                            store    = False,
-                           search   = "nearest")
+                           search   = "linear")
 
         # Set different resitution ratio
         self.p.e_wall[:] = 0.7

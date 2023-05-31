@@ -22,18 +22,15 @@ def plot(d, p, path, it, show=False, png=False):
     ax.set_ylim([d.y_min, d.y_max])
 
     # Plot particles
-    pat = []
+    patches = []
     for i in range(p.np):
-        pat.append(Circle((p.x[i,0], p.x[i,1]), p.r[i],
-                          fill=True, color=p.c[i]))
-        if (hasattr(p, 'm_rad')):
-            pat.append(Circle((p.x[i,0], p.x[i,1]), p.m_rad,
-                              fill=False, color=p.c[i]))
+        patches.append(Circle((p.x[i,0], p.x[i,1]), p.r[i],
+                              fill=True, color=p.c[i]))
+        #if (hasattr(p, 'm_rad')):
+        #    patches.append(Circle((p.x[i,0], p.x[i,1]), p.m_rad,
+        #                          fill=False, color=p.c[i]))
 
-    col = PatchCollection(pat, match_original=True)#, cmap=cmap, norm=norm)
-    #col.set_array(c)
-    #col.set_edgecolor('k')
-    #col.set_linewidth(1.)
+    col = PatchCollection(patches, match_original=True)
     ax.add_collection(col)
 
     ax.set_aspect('equal')
