@@ -8,17 +8,17 @@ from dem.app.base_app import *
 
 ### ************************************************
 ### Dropping of several spheres to check inter-particle contacts
-class drop(base_app):
+class dam_break(base_app):
     ### ************************************************
     ### Constructor
     def __init__(self,
-                 name            = 'drop',
-                 t_max           = 2.0,
+                 name            = 'dam_break',
+                 t_max           = 2.5,
                  dt              = 2.5e-5,
                  plot_freq       = 1000,
                  plot_show       = False,
                  plot_trajectory = False,
-                 plot_png        = False):
+                 plot_png        = True):
         super().__init__()
 
         self.name            = name
@@ -32,8 +32,8 @@ class drop(base_app):
         self.nt      = int(self.t_max/self.dt)
         self.plot_it = 0
 
-        self.n_row  = 40 # nb of particles on a row at start
-        self.n_col  = 40 # nb of particles on a col at start
+        self.n_row  = 30 # nb of particles on a row at start
+        self.n_col  = 30 # nb of particles on a col at start
         self.radius = 0.025
 
         self.p = particles(np       = self.n_row*self.n_col,
@@ -42,10 +42,11 @@ class drop(base_app):
                            radius   = self.radius,
                            color    = "b",
                            store    = False,
-                           search   = "linear")
+                           search   = "nearest")
 
         # Set different resitution ratio
-        self.p.e_wall[:] = 0.7
+        self.p.e_wall[:] = 0.95
+        self.p.e_part[:] = 0.95
 
         # Colors
         colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])
@@ -55,7 +56,7 @@ class drop(base_app):
                                        x_min      = 0.0,
                                        x_max      = 5.0,
                                        y_min      = 0.0,
-                                       y_max      = 5.0,
+                                       y_max      = 4.0,
                                        material   = "steel")
 
         self.path = self.base_path+'/'+self.name
