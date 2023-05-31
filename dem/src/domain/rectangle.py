@@ -1,4 +1,5 @@
 # Generic imports
+import math
 import matplotlib
 import numpy as np
 import numba as nb
@@ -16,22 +17,22 @@ class rectangle(base_domain):
     ### ************************************************
     ### Constructor
     def __init__(self,
-                 x_min    = 0.0,
-                 x_max    = 1.0,
-                 y_min    = 0.0,
-                 y_max    = 1.0,
-                 angle    = 0.0,
-                 material = "steel"):
+                 x_min     = 0.0,
+                 x_max     = 1.0,
+                 y_min     = 0.0,
+                 y_max     = 1.0,
+                 angle     = 0.0, # in degrees
+                 plot_fill = False,
+                 material  = "steel"):
 
-        # Angle and reverse
-        self.angle   = angle
-        self.reverse = reverse
+        # Angle
+        self.angle = angle
 
-        # External boundaries
-        self.x_min = x_min
-        self.x_max = x_max
-        self.y_min = y_min
-        self.y_max = y_max
+        # Plot filling
+        self.plot_fill = plot_fill
+
+        # Define center of domain
+        self.pc = np.array([0.5*(x_max+x_min), 0.5*(y_max+y_min)])
 
         # Material
         self.mat = material_factory.create(material)
@@ -48,6 +49,20 @@ class rectangle(base_domain):
         self.p2 = np.array([x_max, y_min]) # bottom right
         self.p3 = np.array([x_max, y_max]) # top right
         self.p4 = np.array([x_min, y_max]) # top left
+
+        # Rotate points around center
+        self.rotate(self.p1, self.pc, self.angle)
+        self.rotate(self.p2, self.pc, self.angle)
+        self.rotate(self.p3, self.pc, self.angle)
+        self.rotate(self.p4, self.pc, self.angle)
+
+        # External boundaries
+        self.x_min = min(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
+        self.x_max = max(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
+        self.y_min = min(self.p1[1], self.p2[1], self.p3[1], self.p4[1])
+        self.y_max = max(self.p1[1], self.p2[1], self.p3[1], self.p4[1])
+
+        # Define segments
         self.seg_pts = np.array([ [self.p1, self.p2],
                                   [self.p2, self.p3],
                                   [self.p3, self.p4],
@@ -62,6 +77,20 @@ class rectangle(base_domain):
                       self.v, self.mat.Y, self.mat.G,
                       p.x, p.r, p.m, p.v, p.e_wall, p.mu_wall,
                       p.Y, p.G, p.f, p.np, dt)
+
+    ### ************************************************
+    ### Rotate point around another point from given angle
+    def rotate(self, p, pc, angle):
+
+        cost = math.cos(math.radians(angle))
+        sint = math.sin(math.radians(angle))
+
+        dp = p - pc
+
+        p[0] = dp[0]*cost - dp[1]*sint
+        p[1] = dp[0]*sint + dp[1]*cost
+
+        p += pc
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates

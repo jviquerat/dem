@@ -20,9 +20,18 @@ def plot(d, p, path, it, show=False, png=False):
     fig = plt.gcf()
     ax.set_xlim([d.x_min, d.x_max])
     ax.set_ylim([d.y_min, d.y_max])
+    ax.set_axis_off()
+
+    patches = []
+
+    # Plot domain
+    patches.append(Rectangle(d.p1,
+                             d.p2[0] - d.p1[0],
+                             d.p3[1] - d.p2[1],
+                             angle = d.angle,
+                             fill  = d.plot_fill))
 
     # Plot particles
-    patches = []
     for i in range(p.np):
         patches.append(Circle((p.x[i,0], p.x[i,1]), p.r[i],
                               fill=True, color=p.c[i]))
@@ -35,9 +44,9 @@ def plot(d, p, path, it, show=False, png=False):
 
     ax.set_aspect('equal')
     fig.tight_layout()
-    plt.grid()
+    #plt.grid()
     if png: fig.savefig(path+'/'+str(it)+'.png',
-                        bbox_inches='tight')
+                        bbox_inches=0)
     if show: plt.pause(0.0001)
     plt.clf()
 

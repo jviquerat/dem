@@ -14,7 +14,7 @@ class gravity(base_app):
                  name            = 'gravity',
                  t_max           = 1.0,
                  dt              = 2.5e-5,
-                 plot_freq       = 200,
+                 plot_freq       = 500,
                  plot_show       = True,
                  plot_trajectory = True,
                  plot_png        = True):
@@ -43,6 +43,7 @@ class gravity(base_app):
                                        x_max      = 0.3,
                                        y_min      = 0.0,
                                        y_max      = 0.5,
+                                       angle      = 0.0,
                                        material   = "steel")
 
         # Set perfect restitution
