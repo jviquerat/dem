@@ -4,9 +4,9 @@
 
 A simple 2D discrete element method implementation.
 
-<!-- <p align="center"> -->
-<!--   <img width="800" alt="" src="lbm/save/header.gif"> -->
-<!-- </p> -->
+<p align="center">
+  <img width="200" alt="" src="dem/save/dam_break.gif">
+</p>
 
 <!-- ## Contents -->
 
