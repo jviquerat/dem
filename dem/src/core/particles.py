@@ -20,7 +20,7 @@ class particles:
                  color       = "b",
                  store       = False,
                  search      = "linear",
-                 rad_coeff   = 2.0):
+                 rad_coeff   = 1.0):
 
         self.np          = np
         self.nt          = nt
@@ -33,6 +33,7 @@ class particles:
         self.search      = search
         self.rad_coeff   = rad_coeff
         self.ngbs        = None
+        self.d_ngb       = None
 
         self.reset()
 
@@ -84,7 +85,7 @@ class particles:
     ### Compute maximal velocity
     def max_velocity(self):
 
-        return np.max(np.linalg.norm(self.v))
+        return np.max(np.linalg.norm(self.v, axis=1))
 
     ### ************************************************
     ### Compute maximal radius
@@ -106,19 +107,19 @@ class particles:
         if (self.search == "nearest"):
 
             # If the list of neighbors is not set yet
-            if (self.ngbs is None):
+            if (self.d_ngb is None):
                 self.d_ngb = 0.0
                 self.m_rad = self.rad_coeff*self.max_radius()
                 self.ngbi, self.ngbj = list_ngbs(self.np, self.x,
-                                                  self.r,  self.m_rad)
+                                                 self.r,  self.m_rad)
 
             # If list is not valid anymore
             v_max       = self.max_velocity()
             self.d_ngb += 2.0*v_max*dt
-            if (self.d_ngb > 0.95*self.m_rad):
+            if (self.d_ngb > 0.99*self.m_rad):
+                self.d_ngb = 0.0
                 self.ngbi, self.ngbj = list_ngbs(self.np, self.x,
                                                  self.r,  self.m_rad)
-                self.d_ngb = 0.0
 
             # Check if there are collisions
             n_coll = len(self.ngbi)
@@ -128,24 +129,6 @@ class particles:
             collide_ngbs(self.x,      self.r,    self.m,    self.v,
                          self.e_part, self.Y,    self.G,    self.mu_part,
                          self.f,      self.ngbi, self.ngbj, n_coll, dt)
-
-    ### ************************************************
-    ### Reset neighbor particles
-    def reset_ngb(self):
-
-        self.ngb = [None]*self.np
-        for i in range(self.np):
-            self.ngb[i] = np.empty((0), np.uint16)
-
-        ci, cj, cd = linear_search(self.np, self.x, self.r, self.m_rad)
-
-        for k in range(len(ci)):
-            i = ci[k]
-            j = cj[k]
-            if (i > j):
-                self.ngb[i] = np.append(self.ngb[i], np.uint(j))
-            else:
-                self.ngb[j] = np.append(self.ngb[j], np.uint(i))
 
     ### ************************************************
     ### Add gravity

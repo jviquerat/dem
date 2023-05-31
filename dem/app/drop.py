@@ -13,12 +13,12 @@ class drop(base_app):
     ### Constructor
     def __init__(self,
                  name            = 'drop',
-                 t_max           = 1.0,
+                 t_max           = 2.0,
                  dt              = 2.5e-5,
-                 plot_freq       = 200,
-                 plot_show       = True,
-                 plot_trajectory = True,
-                 plot_png        = False):
+                 plot_freq       = 1000,
+                 plot_show       = False,
+                 plot_trajectory = False,
+                 plot_png        = True):
         super().__init__()
 
         self.name            = name
@@ -32,8 +32,8 @@ class drop(base_app):
         self.nt      = int(self.t_max/self.dt)
         self.plot_it = 0
 
-        self.n_row  = 25 # nb of particles on a row at start
-        self.n_col  = 35 # nb of particles on a col at start
+        self.n_row  = 40 # nb of particles on a row at start
+        self.n_col  = 40 # nb of particles on a col at start
         self.radius = 0.025
 
         self.p = particles(np       = self.n_row*self.n_col,
@@ -41,13 +41,11 @@ class drop(base_app):
                            material = "steel",
                            radius   = self.radius,
                            color    = "b",
-                           store    = False)
+                           store    = False,
+                           search   = "nearest")
 
         # Set different resitution ratio
-        self.s1        = material_factory.create("steel")
-        self.s1.e_wall = 0.7
-        for i in range(self.p.np):
-            self.p.mat[i]  = self.s1
+        self.p.e_wall[:] = 0.7
 
         # Colors
         colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])

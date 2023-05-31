@@ -4,7 +4,8 @@ import math
 import numpy             as np
 import matplotlib.pyplot as plt
 
-from   matplotlib.patches import Rectangle, Circle
+from matplotlib.patches     import Rectangle, Circle
+from matplotlib.collections import PatchCollection
 
 ### ************************************************
 ### Output plot given domain and particles
@@ -21,12 +22,19 @@ def plot(d, p, path, it, show=False, png=False):
     ax.set_ylim([d.y_min, d.y_max])
 
     # Plot particles
+    pat = []
     for i in range(p.np):
-        ax.add_patch(Circle((p.x[i,0], p.x[i,1]), p.r[i],
-                            fill=True, color=p.c[i]))
+        pat.append(Circle((p.x[i,0], p.x[i,1]), p.r[i],
+                          fill=True, color=p.c[i]))
         if (hasattr(p, 'm_rad')):
-            ax.add_patch(Circle((p.x[i,0], p.x[i,1]), p.m_rad,
-                                fill=False, color=p.c[i]))
+            pat.append(Circle((p.x[i,0], p.x[i,1]), p.m_rad,
+                              fill=False, color=p.c[i]))
+
+    col = PatchCollection(pat, match_original=True)#, cmap=cmap, norm=norm)
+    #col.set_array(c)
+    #col.set_edgecolor('k')
+    #col.set_linewidth(1.)
+    ax.add_collection(col)
 
     ax.set_aspect('equal')
     fig.tight_layout()

@@ -16,8 +16,6 @@ class base_app():
     def __init__(self):
 
         self.base_path = 'results'
-        self.plt_show  = False
-        self.plt_png   = False
         self.g         = 9.81
 
     ### ************************************************
@@ -56,10 +54,11 @@ class base_app():
     ### Plot
     def plot(self):
 
-        if (self.it%self.plot_freq == 0):
-            plot(self.d, self.p, self.path, self.plot_it,
-                 show=self.plot_show, png=self.plot_png)
-            self.plot_it += 1
+        if (self.plot_show or self.plot_png):
+            if (self.it%self.plot_freq == 0):
+                plot(self.d, self.p, self.path, self.plot_it,
+                     show=self.plot_show, png=self.plot_png)
+                self.plot_it += 1
 
     ### ************************************************
     ### Finalize
