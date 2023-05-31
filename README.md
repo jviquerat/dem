@@ -2,21 +2,20 @@
 
 ![master badge](https://github.com/jviquerat/dem/workflows/dem/badge.svg?branch=master)
 
-A simple 2D discrete element method implementation.
-
 <p align="center">
-  <img width="200" alt="" src="dem/save/dam_break.gif">
+  <img align="right" width="300" alt="" src="dem/save/dam_break.gif">
 </p>
 
-<!-- ## Contents -->
+A simple 2D discrete element method implementation.
 
-<!-- This LBM code includes: -->
+## Contents
 
-<!-- - D2Q9 lattice -->
-<!-- - TRT collision operator -->
-<!-- - Zou-He on all boundary conditions -->
-<!-- - Drag/lift computation using interpolated bounce-back -->
-<!-- - Core routines are deferred to Numba -->
+This DEM code includes:
+
+- Nearest-neighbor algorithm
+- Hertz collision model
+- Verlet time integration
+- Core routines are deferred to Numba
 
 <!-- ## Running simulations -->
 
