@@ -53,12 +53,6 @@ class rectangle(base_domain):
                            [ 0.0,-1.0],
                            [ 1.0, 0.0]], np.float32)
 
-        # Trigonometric direction tangents
-        self.t = np.array([[ 1.0, 0.0],
-                           [ 0.0, 1.0],
-                           [-1.0, 0.0],
-                           [ 0.0,-1.0]], np.float32)
-
     ### ************************************************
     ### Plot domain
     def plot(self, ax):
