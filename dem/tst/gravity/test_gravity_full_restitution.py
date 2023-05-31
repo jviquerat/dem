@@ -15,7 +15,7 @@ def test_gravity_full_restitution():
 
     # Run gravity app with restitution equal to 1
     app = gravity(t_max=0.6, dt=2.5e-5, plot_show=False, plot_trajectory=False)
-    app.p.mtr.e_wall = 1.0
+    app.p.e_wall[:] = 1.0
     run(app)
 
     # Retrieve history

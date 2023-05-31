@@ -14,9 +14,10 @@ class carreau(base_app):
                  name            = 'carreau',
                  t_max           = 1.0,
                  dt              = 2.5e-5,
+                 search          = "nearest",
                  plot_freq       = 200,
                  plot_show       = True,
-                 plot_trajectory = True,
+                 plot_trajectory = False,
                  plot_png        = False):
         super().__init__()
 
@@ -36,13 +37,14 @@ class carreau(base_app):
                            material    = "steel",
                            radius      = 0.05,
                            color       = "b",
-                           store       = True)
+                           store       = True,
+                           search      = search)
 
         self.s1 = material_factory.create("steel")
         self.s1.e_part = 1.0
         self.s1.e_wall = 1.0
-        self.p.mat[0] = self.s1
-        self.p.mat[1] = self.s1
+        self.p.set_material(0, self.s1)
+        self.p.set_material(1, self.s1)
 
         # Colors
         self.p.c[0] = 'b'

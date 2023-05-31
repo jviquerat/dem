@@ -1,3 +1,6 @@
+from numba import float32
+from numba.experimental import jitclass
+
 ### ************************************************
 ### Class defining glass material
 ### Taken from:
@@ -5,6 +8,18 @@
 ###    in reduced-gravity environments",
 ###    C. Sunday et al, Monthly Notices of the Royal Astronomical Society,
 ###    498, 1062-1079 (2020)
+spec = [
+    ('density', float32),
+    ('young',   float32),
+    ('poisson', float32),
+    ('mu_wall', float32),
+    ('mu_part', float32),
+    ('e_wall',  float32),
+    ('e_part',  float32),
+    ('Y',       float32),
+    ('G',       float32)
+]
+@jitclass(spec)
 class glass():
     ### ************************************************
     ### Constructor

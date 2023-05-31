@@ -8,14 +8,18 @@ from dem.src.core.run import *
 
 ###############################################
 ### Test carreau case between two particles
-def test_carreau():
+def test_carreau_nearest():
 
     # Initial space
     print("")
 
-    # Run carreau app
-    app = carreau(t_max=0.2, dt=2.5e-5, plot_show=True, plot_trajectory=False)
-    app.p.mtr.e_wall = 1.0
+    ##################
+    ### Run carreau app with nearest neighbor
+    app = carreau(t_max     = 0.2,
+                  dt        = 2.5e-5,
+                  search    = "nearest",
+                  plot_show = False)
+    app.p.e_wall[:] = 1.0
     run(app)
 
     # Check that final velocity of first particle is zero

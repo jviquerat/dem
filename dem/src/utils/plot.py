@@ -4,7 +4,8 @@ import math
 import numpy             as np
 import matplotlib.pyplot as plt
 
-from   matplotlib.patches import Rectangle, Circle
+from matplotlib.patches     import Rectangle, Circle
+from matplotlib.collections import PatchCollection
 
 ### ************************************************
 ### Output plot given domain and particles
@@ -19,20 +20,18 @@ def plot(d, p, path, it, show=False, png=False):
     fig = plt.gcf()
     ax.set_xlim([d.x_min, d.x_max])
     ax.set_ylim([d.y_min, d.y_max])
-    #ax.add_patch(Rectangle((d.x_min, d.y_min),
-    #                       d.x_max-d.x_min,
-    #                       d.y_max-d.y_min,
-    #                       fill=False, color='r'))
-    # if (d.dtype == "circle"):
-    #     ax.add_patch(Circle((0.5*(d.x_max+d.x_min),
-    #                          0.5*(d.y_max+d.y_min)),
-    #                          0.5*(d.x_max-d.x_min),
-    #                          fill=False, color='r'))
 
     # Plot particles
+    patches = []
     for i in range(p.np):
-        ax.add_patch(Circle((p.x[i,0], p.x[i,1]), p.r[i],
-                            fill=True, color=p.c[i]))
+        patches.append(Circle((p.x[i,0], p.x[i,1]), p.r[i],
+                              fill=True, color=p.c[i]))
+        #if (hasattr(p, 'm_rad')):
+        #    patches.append(Circle((p.x[i,0], p.x[i,1]), p.m_rad,
+        #                          fill=False, color=p.c[i]))
+
+    col = PatchCollection(patches, match_original=True)
+    ax.add_collection(col)
 
     ax.set_aspect('equal')
     fig.tight_layout()
