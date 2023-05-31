@@ -28,6 +28,10 @@ class rectangle(base_domain):
         # Angle
         self.angle = angle
 
+        # Lateral sizes
+        self.dx = x_max - x_min
+        self.dy = y_max - y_min
+
         # Plot filling
         self.plot_fill = plot_fill
 
@@ -56,6 +60,8 @@ class rectangle(base_domain):
         self.rotate(self.p3, self.pc, self.angle)
         self.rotate(self.p4, self.pc, self.angle)
 
+        print((self.p2[0]-self.p1[0])*(self.p3[1] - self.p2[1]))
+
         # External boundaries
         self.x_min = min(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
         self.x_max = max(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
@@ -82,15 +88,12 @@ class rectangle(base_domain):
     ### Rotate point around another point from given angle
     def rotate(self, p, pc, angle):
 
-        cost = math.cos(math.radians(angle))
-        sint = math.sin(math.radians(angle))
-
-        dp = p - pc
-
-        p[0] = dp[0]*cost - dp[1]*sint
-        p[1] = dp[0]*sint + dp[1]*cost
-
-        p += pc
+        cost  = math.cos(math.radians(angle))
+        sint  = math.sin(math.radians(angle))
+        dp    = np.zeros((2))
+        dp[0] = (p[0]-pc[0])*cost - (p[1]-pc[1])*sint + pc[0]
+        dp[1] = (p[0]-pc[0])*sint + (p[1]-pc[1])*cost + pc[1]
+        p[:]  = dp[:]
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates

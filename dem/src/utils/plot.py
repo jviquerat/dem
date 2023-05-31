@@ -25,11 +25,10 @@ def plot(d, p, path, it, show=False, png=False):
     patches = []
 
     # Plot domain
-    patches.append(Rectangle(d.p1,
-                             d.p2[0] - d.p1[0],
-                             d.p3[1] - d.p2[1],
-                             angle = d.angle,
-                             fill  = d.plot_fill))
+    patches.append(Rectangle(d.p1, d.dx, d.dy,
+                             angle          = d.angle,
+                             rotation_point = 'xy',
+                             fill           = d.plot_fill))
 
     # Plot particles
     for i in range(p.np):
@@ -47,7 +46,7 @@ def plot(d, p, path, it, show=False, png=False):
     #plt.grid()
     if png: fig.savefig(path+'/'+str(it)+'.png',
                         bbox_inches=0)
-    if show: plt.pause(0.0001)
+    if show: plt.pause(0.01)
     plt.clf()
 
 ### ************************************************

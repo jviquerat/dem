@@ -43,7 +43,7 @@ class gravity(base_app):
                                        x_max      = 0.3,
                                        y_min      = 0.0,
                                        y_max      = 0.5,
-                                       angle      = 0.0,
+                                       angle      = 40.0,
                                        material   = "steel")
 
         # Set perfect restitution
