@@ -35,7 +35,7 @@ def plot(d, p, path, it, show=False, png=False):
 
     ax.set_aspect('equal')
     fig.tight_layout()
-    #plt.grid()
+    plt.grid()
     if png: fig.savefig(path+'/'+str(it)+'.png',
                         bbox_inches='tight')
     if show: plt.pause(0.0001)

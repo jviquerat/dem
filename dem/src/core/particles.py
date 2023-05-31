@@ -41,21 +41,21 @@ class particles:
     ### Reset arrays
     def reset(self):
 
-        self.m = np.ones( (self.np),   np.float32)*self.mass   # masses
-        self.r = np.ones( (self.np),   np.float32)*self.radius # radii
-        self.x = np.zeros((self.np,2), np.float32)             # positions
-        self.d = np.zeros((self.np,2), np.float32)             # displacements
-        self.v = np.zeros((self.np,2), np.float32)             # velocities
-        self.a = np.zeros((self.np,2), np.float32)             # accelerations
-        self.f = np.zeros((self.np,2), np.float32)             # forces
+        self.m = np.ones( (self.np), )*self.mass   # masses
+        self.r = np.ones( (self.np), )*self.radius # radii
+        self.x = np.zeros((self.np,2))             # positions
+        self.d = np.zeros((self.np,2))             # displacements
+        self.v = np.zeros((self.np,2))             # velocities
+        self.a = np.zeros((self.np,2))             # accelerations
+        self.f = np.zeros((self.np,2))             # forces
 
         # default material parameters
-        self.e_wall  = np.ones((self.np), np.float32)*self.mtr.e_wall
-        self.mu_wall = np.ones((self.np), np.float32)*self.mtr.mu_wall
-        self.e_part  = np.ones((self.np), np.float32)*self.mtr.e_part
-        self.mu_part = np.ones((self.np), np.float32)*self.mtr.mu_part
-        self.Y       = np.ones((self.np), np.float32)*self.mtr.Y
-        self.G       = np.ones((self.np), np.float32)*self.mtr.G
+        self.e_wall  = np.ones((self.np))*self.mtr.e_wall
+        self.mu_wall = np.ones((self.np))*self.mtr.mu_wall
+        self.e_part  = np.ones((self.np))*self.mtr.e_part
+        self.mu_part = np.ones((self.np))*self.mtr.mu_part
+        self.Y       = np.ones((self.np))*self.mtr.Y
+        self.G       = np.ones((self.np))*self.mtr.G
 
         self.c       = [self.color]*self.np # colors
 
