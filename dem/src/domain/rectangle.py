@@ -159,13 +159,19 @@ def pDistance(p, p1, p2):
     len_sq = C * C + D * D
     param  = dot / len_sq
 
-    if ((param < 0.0) or (param > 1.0)):
-        return False, 1.0e8, None
+    if (param < 0):
+        xx = x1;
+        yy = y1;
+    elif (param > 1):
+        xx = x2;
+        yy = y2;
     else:
         xx = x1 + param * C
         yy = y1 + param * D
-        dx   = xx - x
-        dy   = yy - y
-        dist = math.sqrt(dx * dx + dy * dy)
-        nrm  = np.array([dx, dy])/dist # outward normal
-        return True, dist, nrm
+
+    dx   = xx - x
+    dy   = yy - y
+    dist = math.sqrt(dx * dx + dy * dy)
+    nrm  = np.array([dx, dy])/dist # outward normal
+
+    return True, dist, nrm

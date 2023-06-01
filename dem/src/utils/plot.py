@@ -30,10 +30,11 @@ def plot(app):
     patches = []
 
     # Plot main domain
-    patches.append(Rectangle(app.d_lst[0].p1, app.d_lst[0].dx, app.d_lst[0].dy,
-                             angle          = app.d_lst[0].angle,
-                             rotation_point = 'xy',
-                             fill           = app.d_lst[0].plot_fill))
+    for d in app.d_lst:
+        patches.append(Rectangle(d.p1, d.dx, d.dy,
+                                 angle          = d.angle,
+                                 rotation_point = 'xy',
+                                 fill           = d.plot_fill))
 
     # Plot particles
     for i in range(app.p.np):

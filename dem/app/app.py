@@ -4,6 +4,7 @@ from dem.app.gravity      import *
 from dem.app.restitution  import *
 from dem.app.dam_break    import *
 from dem.app.carreau      import *
+from dem.app.obstacle     import *
 
 # Declare factory
 app_factory = factory()
@@ -13,3 +14,4 @@ app_factory.register("gravity",     gravity)
 app_factory.register("restitution", restitution)
 app_factory.register("dam_break",   dam_break)
 app_factory.register("carreau",     carreau)
+app_factory.register("obstacle",    obstacle)
