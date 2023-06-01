@@ -15,8 +15,9 @@ class base_app():
     ### Constructor
     def __init__(self):
 
-        self.base_path = 'results'
-        self.g         = 9.81
+        self.plot_coll_radius = False
+        self.base_path        = 'results'
+        self.g                = 9.81
 
     ### ************************************************
     ### Iteration printings
