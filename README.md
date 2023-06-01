@@ -17,6 +17,16 @@ This DEM code includes:
 - Verlet time integration
 - Core routines are deferred to Numba
 
+## Examples
+
+Running a specific case requires to write an application in `dem/app`, and then to register it in `dem/app/app.py`. You can than call it from root directory doing `python start.py <app_name>`. Multiple app examples are provided in the dedicated directory, to be copied and adapted. Below are some simple sanity checks and a bit more advanced examples of what is possible with this small library.
+
+| **`gravity`**                                             | **`gravity-tilted`**                                           | **`carreau`**                                           |
+| :-------------------------------------------------------: | :------------------------------------------------------------: | :-----------------------------------------------------: |
+| <img height="250" alt="gif" src="dem/save/gravity.gif">   | <img height="250" alt="gif" src="dem/save/gravity_tilted.gif"> | <img height="250" alt="gif" src="dem/save/carreau.gif"> |
+| **`dam-break`**                                           | **`?`**  | **`?`**  |
+| <img height="250" alt="gif" src="dem/save/dam_break.gif"> |          |          |
+
 <!-- ## Running simulations -->
 
 <!-- Cases are described in the `lbm/src/app/` repository. To run a simulation, adjust the parameters in the related python file, then run `python3 start.py <app_name>`. A results folder will be generated in `./results/` with the current date and time. If you wish to add a new application, you must create a new app, and register it in the factory, located in `lbm/src/app/app.py`. Below are some examples and benchmarks that were ran with the code. The related cases are available in the repository. The computational times are obtained on a standard laptop. -->
