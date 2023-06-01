@@ -56,8 +56,7 @@ class base_app():
 
         if (self.plot_show or self.plot_png):
             if (self.it%self.plot_freq == 0):
-                plot(self.d, self.p, self.path, self.plot_it,
-                     show=self.plot_show, png=self.plot_png)
+                plot(self)
                 self.plot_it += 1
 
     ### ************************************************

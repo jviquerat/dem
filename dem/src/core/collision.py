@@ -22,7 +22,7 @@ def hertz(dx, dt, r1, r2, m1, m2, v1, v2, n,
     C = 0.5*(mu1 + mu2)
 
     # relative velocity
-    v    = np.zeros((2), np.float32)
+    v    = np.zeros((2))
     v[:] = v2[:] - v1[:]
 
     # normal stiffness
@@ -38,9 +38,9 @@ def hertz(dx, dt, r1, r2, m1, m2, v1, v2, n,
     g_t =-L*np.sqrt(5.0*k_t*M/6.0)
 
     # normal and tangential velocities
-    t     = np.zeros((2), np.float32)
-    vn    = np.zeros((2), np.float32)
-    vt    = np.zeros((2), np.float32)
+    t     = np.zeros((2))
+    vn    = np.zeros((2))
+    vt    = np.zeros((2))
     vn[:] = np.dot(v, n)*n[:]
     vt[:] = v[:] - vn[:]
     t[:]  = vt[:]/np.sqrt(np.dot(vt[:],vt[:]) + 1.0e-8)
@@ -51,8 +51,8 @@ def hertz(dx, dt, r1, r2, m1, m2, v1, v2, n,
     dxt[:] = vt[:]*dt
 
     # forces
-    fn = np.zeros((2), np.float32)
-    ft = np.zeros((2), np.float32)
+    fn = np.zeros((2))
+    ft = np.zeros((2))
 
     dx15  = pow(dx, 1.5)
     dx05  = pow(dx, 0.5)

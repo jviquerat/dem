@@ -15,9 +15,9 @@ class buff:
 
         self.data = {}
         for name in self.names:
-            self.data[name] = np.zeros((self.np, self.nt), np.float32)
+            self.data[name] = np.zeros((self.np, self.nt))
 
-        self.t = np.zeros((self.nt), np.float32)
+        self.t = np.zeros((self.nt))
         self.k = 0
 
     def store(self, time, names, fields):

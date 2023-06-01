@@ -1,4 +1,4 @@
-from numba import float32
+from numba import float64
 from numba.experimental import jitclass
 
 ### ************************************************
@@ -9,15 +9,15 @@ from numba.experimental import jitclass
 ###    C. Sunday et al, Monthly Notices of the Royal Astronomical Society,
 ###    498, 1062-1079 (2020)
 spec = [
-    ('density', float32),
-    ('young',   float32),
-    ('poisson', float32),
-    ('mu_wall', float32),
-    ('mu_part', float32),
-    ('e_wall',  float32),
-    ('e_part',  float32),
-    ('Y',       float32),
-    ('G',       float32)
+    ('density', float64),
+    ('young',   float64),
+    ('poisson', float64),
+    ('mu_wall', float64),
+    ('mu_part', float64),
+    ('e_wall',  float64),
+    ('e_part',  float64),
+    ('Y',       float64),
+    ('G',       float64)
 ]
 @jitclass(spec)
 class glass():

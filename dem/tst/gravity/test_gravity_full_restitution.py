@@ -14,7 +14,12 @@ def test_gravity_full_restitution():
     print("")
 
     # Run gravity app with restitution equal to 1
-    app = gravity(t_max=0.6, dt=2.5e-5, plot_show=False, plot_trajectory=False)
+    app = gravity(t_max           = 0.6,
+                  dt              = 2.5e-5,
+                  angle           = 0.0,
+                  plot_show       = False,
+                  plot_png        = False,
+                  plot_trajectory = False)
     app.p.e_wall[:] = 1.0
     run(app)
 

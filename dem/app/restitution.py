@@ -38,7 +38,6 @@ class restitution(base_app):
                            color       = "b",
                            store       = True)
 
-        # Set different restitution ratios
         self.s1 = material_factory.create("steel")
         self.s2 = material_factory.create("steel")
         self.s3 = material_factory.create("steel")
@@ -49,7 +48,6 @@ class restitution(base_app):
         self.p.set_material(1, self.s2)
         self.p.set_material(2, self.s3)
 
-        # Colors
         self.p.c[0] = 'b'
         self.p.c[1] = 'r'
         self.p.c[2] = 'y'
@@ -60,6 +58,8 @@ class restitution(base_app):
                                        y_min      = 0.0,
                                        y_max      = 0.5,
                                        material   = "steel")
+
+        self.d_lst = [self.d]
 
         self.path = self.base_path+'/'+self.name
         os.makedirs(self.path, exist_ok=True)

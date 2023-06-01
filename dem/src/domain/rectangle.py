@@ -1,4 +1,5 @@
 # Generic imports
+import math
 import matplotlib
 import numpy as np
 import numba as nb
@@ -16,17 +17,26 @@ class rectangle(base_domain):
     ### ************************************************
     ### Constructor
     def __init__(self,
-                 x_min    = 0.0,
-                 x_max    = 1.0,
-                 y_min    = 0.0,
-                 y_max    = 1.0,
-                 material = "steel"):
+                 x_min     = 0.0,
+                 x_max     = 1.0,
+                 y_min     = 0.0,
+                 y_max     = 1.0,
+                 angle     = 0.0, # in degrees
+                 plot_fill = False,
+                 material  = "steel"):
 
-        # External boundaries
-        self.x_min = x_min
-        self.x_max = x_max
-        self.y_min = y_min
-        self.y_max = y_max
+        # Angle
+        self.angle = angle
+
+        # Lateral sizes
+        self.dx = x_max - x_min
+        self.dy = y_max - y_min
+
+        # Plot filling
+        self.plot_fill = plot_fill
+
+        # Define center of domain
+        self.pc = np.array([0.5*(x_max+x_min), 0.5*(y_max+y_min)])
 
         # Material
         self.mat = material_factory.create(material)
@@ -36,55 +46,60 @@ class rectangle(base_domain):
         self.m     = 1.0e8
         self.v     = np.zeros((2))
 
-        # Define a*x + b*y + c = 0 for all four borders
-        # Ridge 0 is the bottom one, then we pursue in
-        # trigonometric order. d array corresponds to the
-        # normalization parameter sqrt(a*a + b*b).
-        # n and t are the normal and tangential vectors
-        self.a = np.array([0.0, 1.0, 0.0, 1.0])
-        self.b = np.array([1.0, 0.0, 1.0, 0.0])
-        self.c = np.array([-self.y_min,-self.x_max,
-                           -self.y_max,-self.x_min])
-        self.d = np.array([1.0, 1.0, 1.0, 1.0])
+        # Define boundary points of the 4 segments
+        # First segment is bottom one, then right one,
+        # then top one, then left one
+        self.p1 = np.array([x_min, y_min]) # bottom left
+        self.p2 = np.array([x_max, y_min]) # bottom right
+        self.p3 = np.array([x_max, y_max]) # top right
+        self.p4 = np.array([x_min, y_max]) # top left
 
-        # Inward normals
-        self.n = np.array([[ 0.0, 1.0],
-                           [-1.0, 0.0],
-                           [ 0.0,-1.0],
-                           [ 1.0, 0.0]], np.float32)
+        # Rotate points around center
+        self.rotate(self.p1, self.pc, self.angle)
+        self.rotate(self.p2, self.pc, self.angle)
+        self.rotate(self.p3, self.pc, self.angle)
+        self.rotate(self.p4, self.pc, self.angle)
 
-        # Trigonometric direction tangents
-        self.t = np.array([[ 1.0, 0.0],
-                           [ 0.0, 1.0],
-                           [-1.0, 0.0],
-                           [ 0.0,-1.0]], np.float32)
+        # External boundaries
+        self.x_min = min(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
+        self.x_max = max(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
+        self.y_min = min(self.p1[1], self.p2[1], self.p3[1], self.p4[1])
+        self.y_max = max(self.p1[1], self.p2[1], self.p3[1], self.p4[1])
 
-    ### ************************************************
-    ### Plot domain
-    def plot(self, ax):
-
-        ax.add_patch(Rectangle((self.x_min, self.y_min),
-                                self.x_max-self.x_min,
-                                self.y_max-self.y_min,
-                                fill=False, color='r'))
+        # Define segments
+        self.seg_pts = np.array([ [self.p1, self.p2],
+                                  [self.p2, self.p3],
+                                  [self.p3, self.p4],
+                                  [self.p4, self.p1] ])
 
     ### ************************************************
     ### Compute collisions with a set of particles
     def collisions(self, p, dt):
 
         # Search for collisions linearly and compute forces
-        linear_search(self.a, self.b, self.c, self.d, self.r, self.m,
-                      self.v, self.mat.Y, self.mat.G, self.n,
+        linear_search(self.seg_pts, self.r, self.m,
+                      self.v, self.mat.Y, self.mat.G,
                       p.x, p.r, p.m, p.v, p.e_wall, p.mu_wall,
                       p.Y, p.G, p.f, p.np, dt)
+
+    ### ************************************************
+    ### Rotate point around another point from given angle
+    def rotate(self, p, pc, angle):
+
+        cost  = math.cos(math.radians(angle))
+        sint  = math.sin(math.radians(angle))
+        dp    = np.zeros((2))
+        dp[0] = (p[0]-pc[0])*cost - (p[1]-pc[1])*sint + pc[0]
+        dp[1] = (p[0]-pc[0])*sint + (p[1]-pc[1])*cost + pc[1]
+        p[:]  = dp[:]
 
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
 ### Prefix d_ corresponds to domain
 ### Prefix p_ corresponds to particle
 @nb.njit(cache=True)
-def linear_search(d_a, d_b, d_c, d_d, d_r, d_m,
-                  d_v, d_mat_Y, d_mat_G, d_n,
+def linear_search(d_pts, d_r, d_m,
+                  d_v, d_mat_Y, d_mat_G,
                   p_x, p_r, p_m, p_v, p_e_wall, p_mu_wall,
                   p_Y, p_G, p_f, n, dt):
 
@@ -93,23 +108,18 @@ def linear_search(d_a, d_b, d_c, d_d, d_r, d_m,
 
         # Loop on rectangle sides
         for j in range(4):
-            dx = abs(d_a[j]*p_x[i,0] + d_b[j]*p_x[i,1] + d_c[j])/d_d[j]
-            dx = dx - p_r[i]
+            chk, dx, nrm = pDistance(p_x[i], d_pts[j,0], d_pts[j,1])
+            dx           = dx - p_r[i]
 
             # If particle intersects boundary
-            if (dx < 0.0):
-
-                # Compute normal
-                dx     = abs(dx)
-                nrm    = np.zeros(2, np.float32)
-                nrm[:] =-d_n[j,:]
+            if (chk and (dx < 0.0)):
 
                 # Return forces from collision parameters
                 # - normal elastic
                 # - normal damping,
                 # - tangential elastic
                 # - tangential damping
-                fn, ft = hertz(dx,           # penetration
+                fn, ft = hertz(abs(dx),      # penetration
                                dt,           # timestep
                                p_r[i],       # radius 1
                                d_r,          # radius 2
@@ -133,45 +143,29 @@ def linear_search(d_a, d_b, d_c, d_d, d_r, d_m,
                 # tangential force
                 p_f[i,:] -= ft[:]
 
-### ************************************************
-### Collision forces on particle in rectangle domain
-#@nb.njit(cache=True)
-def collide(p, d, dt, dx, ci, cj, n_coll):
+@nb.njit(cache=True)
+def pDistance(p, p1, p2):
 
-    # Loop on collisions with domain
-    for k in range(n_coll):
-        i = ci[k]
-        j = cj[k]
+    x,  y  =  p[0],  p[1]
+    x1, y1 = p1[0], p1[1]
+    x2, y2 = p2[0], p2[1]
 
-        # Compute normal and tangent
-        n    = np.zeros(2, np.float32)
-        n[:] =-d.n[j,:]
+    A = x - x1
+    B = y - y1
+    C = x2 - x1
+    D = y2 - y1
 
-        # Return forces from collision parameters
-        # - normal elastic
-        # - normal damping,
-        # - tangential elastic
-        # - tangential damping
-        fn, ft = hertz(dx[k],            # penetration
-                       dt,               # timestep
-                       p.r[i],           # radius 1
-                       d.r,              # radius 2
-                       p.m[i],           # mass 1
-                       d.m,              # mass 2
-                       p.v[i,:],         # velocity 1
-                       d.v,              # velocity 2
-                       n[:],             # normal from 1 to 2
-                       p.mat[i].e_wall,  # restitution 1
-                       p.mat[i].e_wall,  # restitution 2
-                       p.mat[i].Y,       # effective young modulus 1
-                       d.mat.Y,          # effective young modulus 2
-                       p.mat[i].G,       # effective shear modulus 1
-                       d.mat.G,          # effective shear modulus 2
-                       p.mat[i].mu_wall, # static friction 1
-                       p.mat[i].mu_wall) # static friction 2
+    dot    = A * C + B * D
+    len_sq = C * C + D * D
+    param  = dot / len_sq
 
-        # normal force
-        p.f[i,:] -= fn[:]
-
-        # tangential force
-        p.f[i,:] -= ft[:]
+    if ((param < 0.0) or (param > 1.0)):
+        return False, 1.0e8, None
+    else:
+        xx = x1 + param * C
+        yy = y1 + param * D
+        dx   = xx - x
+        dy   = yy - y
+        dist = math.sqrt(dx * dx + dy * dy)
+        nrm  = np.array([dx, dy])/dist # outward normal
+        return True, dist, nrm

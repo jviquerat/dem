@@ -8,37 +8,49 @@ from matplotlib.patches     import Rectangle, Circle
 from matplotlib.collections import PatchCollection
 
 ### ************************************************
-### Output plot given domain and particles
-def plot(d, p, path, it, show=False, png=False):
+### Output plot of an app
+def plot(app):
 
     # Plot counting and initialization
-    if (it == 0):
+    if (app.plot_it == 0):
         plt.ion()
 
     # Plot domain
     ax  = plt.gca()
     fig = plt.gcf()
-    ax.set_xlim([d.x_min, d.x_max])
-    ax.set_ylim([d.y_min, d.y_max])
+    ax.set_xlim([app.d_lst[0].x_min, app.d_lst[0].x_max])
+    ax.set_ylim([app.d_lst[0].y_min, app.d_lst[0].y_max])
+    ax.set_axis_off()
+    fig.tight_layout()
+    plt.margins(0,0)
+    plt.subplots_adjust(0,0,1,1,0,0)
+    ax.xaxis.set_major_locator(plt.NullLocator())
+    ax.yaxis.set_major_locator(plt.NullLocator())
+
+    patches = []
+
+    # Plot main domain
+    patches.append(Rectangle(app.d_lst[0].p1, app.d_lst[0].dx, app.d_lst[0].dy,
+                             angle          = app.d_lst[0].angle,
+                             rotation_point = 'xy',
+                             fill           = app.d_lst[0].plot_fill))
 
     # Plot particles
-    patches = []
-    for i in range(p.np):
-        patches.append(Circle((p.x[i,0], p.x[i,1]), p.r[i],
-                              fill=True, color=p.c[i]))
-        #if (hasattr(p, 'm_rad')):
-        #    patches.append(Circle((p.x[i,0], p.x[i,1]), p.m_rad,
-        #                          fill=False, color=p.c[i]))
+    for i in range(app.p.np):
+        patches.append(Circle((app.p.x[i,0], app.p.x[i,1]), app.p.r[i],
+                              fill=True, color=app.p.c[i]))
+        #if (hasattr(app.p, 'm_rad')):
+        #    patches.append(Circle((app.p.x[i,0], app.p.x[i,1]), app.p.m_rad,
+        #                          fill=False, color=app.p.c[i]))
 
     col = PatchCollection(patches, match_original=True)
     ax.add_collection(col)
-
     ax.set_aspect('equal')
-    fig.tight_layout()
+
     #plt.grid()
-    if png: fig.savefig(path+'/'+str(it)+'.png',
-                        bbox_inches='tight')
-    if show: plt.pause(0.0001)
+    if app.plot_png: fig.savefig(app.path+'/'+str(app.plot_it)+'.png',
+                                 bbox_inches='tight', pad_inches=0)
+    if app.plot_show: plt.pause(0.01)
     plt.clf()
 
 ### ************************************************
