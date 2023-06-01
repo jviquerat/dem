@@ -40,15 +40,14 @@ def plot(app):
     for i in range(app.p.np):
         patches.append(Circle((app.p.x[i,0], app.p.x[i,1]), app.p.r[i],
                               fill=True, color=app.p.c[i]))
-        #if (hasattr(app.p, 'm_rad')):
-        #    patches.append(Circle((app.p.x[i,0], app.p.x[i,1]), app.p.m_rad,
-        #                          fill=False, color=app.p.c[i]))
+        if (app.plot_coll_radius):
+            patches.append(Circle((app.p.x[i,0], app.p.x[i,1]), app.p.m_rad,
+                                  fill=False, color=app.p.c[i]))
 
     col = PatchCollection(patches, match_original=True)
     ax.add_collection(col)
     ax.set_aspect('equal')
 
-    #plt.grid()
     if app.plot_png: fig.savefig(app.path+'/'+str(app.plot_it)+'.png',
                                  bbox_inches='tight', pad_inches=0)
     if app.plot_show: plt.pause(0.01)

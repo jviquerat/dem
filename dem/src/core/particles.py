@@ -58,6 +58,7 @@ class particles:
         self.G       = np.ones((self.np))*self.mtr.G
 
         self.c       = [self.color]*self.np # colors
+        self.m_rad   = self.rad_coeff*self.max_radius()
 
         # Optional storage
         if self.store:

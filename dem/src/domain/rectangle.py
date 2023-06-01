@@ -108,11 +108,11 @@ def linear_search(d_pts, d_r, d_m,
 
         # Loop on rectangle sides
         for j in range(4):
-            chk, dx, nrm = pDistance(p_x[i], d_pts[j,0], d_pts[j,1])
-            dx           = dx - p_r[i]
+            dx, nrm = p_to_sgt(p_x[i], d_pts[j,0], d_pts[j,1])
+            dx      = dx - p_r[i]
 
             # If particle intersects boundary
-            if (chk and (dx < 0.0)):
+            if (dx < 0.0):
 
                 # Return forces from collision parameters
                 # - normal elastic
@@ -143,35 +143,37 @@ def linear_search(d_pts, d_r, d_m,
                 # tangential force
                 p_f[i,:] -= ft[:]
 
+### ************************************************
+### Compute distance from point p to segment [p1,p2]
 @nb.njit(cache=True)
-def pDistance(p, p1, p2):
+def p_to_sgt(p, p1, p2):
 
     x,  y  =  p[0],  p[1]
     x1, y1 = p1[0], p1[1]
     x2, y2 = p2[0], p2[1]
 
-    A = x - x1
-    B = y - y1
-    C = x2 - x1
-    D = y2 - y1
+    a = x  - x1
+    b = y  - y1
+    c = x2 - x1
+    d = y2 - y1
 
-    dot    = A * C + B * D
-    len_sq = C * C + D * D
-    param  = dot / len_sq
+    dot   = a*c + b*d
+    lgt   = c*c + d*d
+    ratio = dot/lgt
 
-    if (param < 0):
-        xx = x1;
-        yy = y1;
-    elif (param > 1):
-        xx = x2;
-        yy = y2;
+    if (ratio < 0.0):
+        px = x1;
+        py = y1;
+    elif (ratio > 1.0):
+        px = x2;
+        py = y2;
     else:
-        xx = x1 + param * C
-        yy = y1 + param * D
+        px = x1 + ratio*c
+        py = y1 + ratio*d
 
-    dx   = xx - x
-    dy   = yy - y
-    dist = math.sqrt(dx * dx + dy * dy)
+    dx   = px - x
+    dy   = py - y
+    dist = math.sqrt(dx*dx + dy*dy)
     nrm  = np.array([dx, dy])/dist # outward normal
 
-    return True, dist, nrm
+    return dist, nrm
