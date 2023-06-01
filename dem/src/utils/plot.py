@@ -21,6 +21,11 @@ def plot(d, p, path, it, show=False, png=False):
     ax.set_xlim([d.x_min, d.x_max])
     ax.set_ylim([d.y_min, d.y_max])
     ax.set_axis_off()
+    fig.tight_layout()
+    plt.margins(0,0)
+    plt.subplots_adjust(0,0,1,1,0,0)
+    ax.xaxis.set_major_locator(plt.NullLocator())
+    ax.yaxis.set_major_locator(plt.NullLocator())
 
     patches = []
 
@@ -40,12 +45,11 @@ def plot(d, p, path, it, show=False, png=False):
 
     col = PatchCollection(patches, match_original=True)
     ax.add_collection(col)
-
     ax.set_aspect('equal')
-    fig.tight_layout()
+
     #plt.grid()
     if png: fig.savefig(path+'/'+str(it)+'.png',
-                        bbox_inches=0)
+                        bbox_inches='tight', pad_inches=0)
     if show: plt.pause(0.01)
     plt.clf()
 

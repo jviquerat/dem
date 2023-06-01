@@ -12,7 +12,7 @@ class gravity(base_app):
     ### Constructor
     def __init__(self,
                  name            = 'gravity',
-                 t_max           = 1.0,
+                 t_max           = 2.0,
                  dt              = 2.5e-5,
                  angle           = 0.0,
                  plot_freq       = 500,
@@ -48,7 +48,7 @@ class gravity(base_app):
                                        material   = "steel")
 
         # Set perfect restitution
-        self.p.e_wall[:] = 0.5
+        self.p.e_wall[:] = 1.0
 
         self.path = self.base_path+'/'+self.name
         os.makedirs(self.path, exist_ok=True)
