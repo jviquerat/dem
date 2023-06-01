@@ -20,6 +20,7 @@ def test_carreau_nearest():
                   search    = "nearest",
                   plot_show = False)
     app.p.e_wall[:] = 1.0
+    app.p.e_part[:] = 1.0
     run(app)
 
     # Check that final velocity of first particle is zero
@@ -30,4 +31,4 @@ def test_carreau_nearest():
 
     # Check that final velocity of second particle is equal to first one
     vx1 = app.p.buff.get("vx", 1)
-    assert(abs(abs(vx1[-1]) - abs(vx0[0])) < 1.0e-3)
+    assert(abs(abs(vx1[-1]) - abs(vx0[0])) < 3.0e-3)

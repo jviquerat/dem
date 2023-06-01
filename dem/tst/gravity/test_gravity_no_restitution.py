@@ -14,7 +14,8 @@ def test_gravity_no_restitution():
     print("")
 
     # Run gravity app with restitution equal to 0
-    app = gravity(t_max=0.4, dt=2.5e-5, plot_show=False, plot_trajectory=False)
+    app = gravity(t_max=0.4, dt=2.5e-5, angle=0.0,
+                  plot_show=False, plot_trajectory=False)
     app.p.e_wall[:] = 0.0
     run(app)
 
