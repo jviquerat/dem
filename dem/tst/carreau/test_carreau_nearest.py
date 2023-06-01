@@ -15,10 +15,12 @@ def test_carreau_nearest():
 
     ##################
     ### Run carreau app with nearest neighbor
-    app = carreau(t_max     = 0.2,
-                  dt        = 2.5e-5,
-                  search    = "nearest",
-                  plot_show = False)
+    app = carreau(t_max           = 0.2,
+                  dt              = 2.5e-5,
+                  search          = "nearest",
+                  plot_show       = False,
+                  plot_png        = False,
+                  plot_trajectory = False)
     app.p.e_wall[:] = 1.0
     app.p.e_part[:] = 1.0
     run(app)

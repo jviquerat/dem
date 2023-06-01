@@ -13,9 +13,13 @@ def test_gravity_tilted():
     # Initial space
     print("")
 
-    # Run gravity app with restitution equal to 1
-    app = gravity(t_max=1.0, dt=2.5e-5, angle=40.0,
-                  plot_show=False, plot_trajectory=False)
+    # Run gravity app with tilted domain
+    app = gravity(t_max           = 1.0,
+                  dt              = 2.5e-5,
+                  angle           = 40.0,
+                  plot_show       = False,
+                  plot_png        = False,
+                  plot_trajectory = False)
     app.p.e_wall[:] = 0.5
     run(app)
 

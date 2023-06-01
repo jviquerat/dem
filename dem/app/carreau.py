@@ -46,7 +46,6 @@ class carreau(base_app):
         self.p.set_material(0, self.s1)
         self.p.set_material(1, self.s1)
 
-        # Colors
         self.p.c[0] = 'b'
         self.p.c[1] = 'r'
 
@@ -56,6 +55,7 @@ class carreau(base_app):
                                        y_min      = 0.0,
                                        y_max      = 0.5,
                                        material   = "steel")
+        self.d_lst = [self.d]
 
         self.path = self.base_path+'/'+self.name
         os.makedirs(self.path, exist_ok=True)

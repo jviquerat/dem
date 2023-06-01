@@ -44,11 +44,9 @@ class dam_break(base_app):
                            store    = False,
                            search   = "nearest")
 
-        # Set different resitution ratio
         self.p.e_wall[:] = 0.99
         self.p.e_part[:] = 0.99
 
-        # Colors
         colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])
         self.p.c = colors[np.random.randint(0,len(colors),size=self.p.np)]
 
@@ -58,6 +56,7 @@ class dam_break(base_app):
                                        y_min      = 0.0,
                                        y_max      = 4.0,
                                        material   = "steel")
+        self.d_lst = [self.d]
 
         self.path = self.base_path+'/'+self.name
         os.makedirs(self.path, exist_ok=True)

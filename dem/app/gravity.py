@@ -39,6 +39,8 @@ class gravity(base_app):
                            color       = "b",
                            store       = True)
 
+        self.p.e_wall[:] = 1.0
+
         self.d = domain_factory.create("rectangle",
                                        x_min      = 0.0,
                                        x_max      = 0.3,
@@ -47,8 +49,7 @@ class gravity(base_app):
                                        angle      = angle,
                                        material   = "steel")
 
-        # Set perfect restitution
-        self.p.e_wall[:] = 1.0
+        self.d_lst = [self.d]
 
         self.path = self.base_path+'/'+self.name
         os.makedirs(self.path, exist_ok=True)
