@@ -3,7 +3,7 @@
 ![master badge](https://github.com/jviquerat/dem/workflows/dem/badge.svg?branch=master)
 
 <p align="center">
-  <img align="right" width="300" alt="" src="dem/save/dam_break.gif">
+  <img align="right" width="300" alt="" src="dem/save/logo.png">
 </p>
 
 A simple 2D discrete element method implementation.
