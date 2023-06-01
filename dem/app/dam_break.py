@@ -45,8 +45,8 @@ class dam_break(base_app):
                            search   = "nearest")
 
         # Set different resitution ratio
-        self.p.e_wall[:] = 0.95
-        self.p.e_part[:] = 0.95
+        self.p.e_wall[:] = 0.99
+        self.p.e_part[:] = 0.99
 
         # Colors
         colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])

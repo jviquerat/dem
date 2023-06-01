@@ -12,7 +12,7 @@ class gravity(base_app):
     ### Constructor
     def __init__(self,
                  name            = 'gravity',
-                 t_max           = 2.0,
+                 t_max           = 2.5,
                  dt              = 2.5e-5,
                  angle           = 0.0,
                  plot_freq       = 500,

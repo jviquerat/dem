@@ -60,8 +60,6 @@ class rectangle(base_domain):
         self.rotate(self.p3, self.pc, self.angle)
         self.rotate(self.p4, self.pc, self.angle)
 
-        print((self.p2[0]-self.p1[0])*(self.p3[1] - self.p2[1]))
-
         # External boundaries
         self.x_min = min(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
         self.x_max = max(self.p1[0], self.p2[0], self.p3[0], self.p4[0])
