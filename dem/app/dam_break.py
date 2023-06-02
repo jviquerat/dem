@@ -36,13 +36,14 @@ class dam_break(base_app):
         self.n_col  = 30 # nb of particles on a col at start
         self.radius = 0.025
 
-        self.p = particles(np       = self.n_row*self.n_col,
-                           nt       = self.nt,
-                           material = "steel",
-                           radius   = self.radius,
-                           color    = "b",
-                           store    = False,
-                           search   = "nearest")
+        self.p = particles(np        = self.n_row*self.n_col,
+                           nt        = self.nt,
+                           material  = "steel",
+                           radius    = self.radius,
+                           color     = "b",
+                           store     = False,
+                           search    = "nearest",
+                           rad_coeff = 2.0)
 
         self.p.e_wall[:] = 0.99
         self.p.e_part[:] = 0.99
