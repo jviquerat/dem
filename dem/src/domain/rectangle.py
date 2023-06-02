@@ -25,6 +25,9 @@ class rectangle(base_domain):
                  plot_fill = False,
                  material  = "steel"):
 
+        # Type
+        self.type = "rectangle"
+
         # Angle
         self.angle = angle
 
@@ -108,7 +111,7 @@ def linear_search(d_pts, d_r, d_m,
 
         # Loop on rectangle sides
         for j in range(4):
-            dx, nrm = p_to_sgt(p_x[i], d_pts[j,0], d_pts[j,1])
+            dx, nrm = p_to_segment(p_x[i], d_pts[j,0], d_pts[j,1])
             dx      = dx - p_r[i]
 
             # If particle intersects boundary
@@ -146,7 +149,7 @@ def linear_search(d_pts, d_r, d_m,
 ### ************************************************
 ### Compute distance from point p to segment [p1,p2]
 @nb.njit(cache=True)
-def p_to_sgt(p, p1, p2):
+def p_to_segment(p, p1, p2):
 
     x,  y  =  p[0],  p[1]
     x1, y1 = p1[0], p1[1]

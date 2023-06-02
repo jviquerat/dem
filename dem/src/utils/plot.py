@@ -31,10 +31,14 @@ def plot(app):
 
     # Plot main domain
     for d in app.d_lst:
-        patches.append(Rectangle(d.p1, d.dx, d.dy,
-                                 angle          = d.angle,
-                                 rotation_point = 'xy',
-                                 fill           = d.plot_fill))
+        if (d.type == "rectangle"):
+            patches.append(Rectangle(d.p1, d.dx, d.dy,
+                                     angle          = d.angle,
+                                     rotation_point = 'xy',
+                                     fill           = d.plot_fill))
+        if (d.type == "circle"):
+            patches.append(Circle((d.x_c, d.y_c), d.rad,
+                                  fill = d.plot_fill))
 
     # Plot particles
     for i in range(app.p.np):
