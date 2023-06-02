@@ -15,7 +15,9 @@ This DEM code includes:
 - Nearest-neighbor algorithm
 - Hertz collision model
 - Verlet time integration
-- Core routines are deferred to Numba
+- Core routines deferred to Numba
+
+As of today, rolling movement is **not** implemented
 
 ## Examples
 
