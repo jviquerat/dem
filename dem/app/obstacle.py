@@ -109,8 +109,6 @@ class obstacle(base_app):
 
         self.p.reset_forces()
         self.p.collisions(self.dt)
-        self.d.collisions(self.p, self.dt)
-        self.o0.collisions(self.p, self.dt)
-        self.o1.collisions(self.p, self.dt)
-        self.o2.collisions(self.p, self.dt)
+        for d in self.d_lst:
+            d.collisions(self.p, self.dt)
         self.p.gravity(self.g)

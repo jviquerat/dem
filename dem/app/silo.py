@@ -33,8 +33,8 @@ class silo(base_app):
         self.nt        = int(self.t_max/self.dt)
         self.plot_it   = 0
 
-        self.n_row  = 10 # nb of particles on a row at start
-        self.n_col  = 10 # nb of particles on a col at start
+        self.n_row  = 25 # nb of particles on a row at start
+        self.n_col  = 20 # nb of particles on a col at start
         self.radius = 0.025
 
         self.p = particles(np          = self.n_row*self.n_col,
