@@ -64,16 +64,16 @@ class silo(base_app):
                                         x_min      =-1.0,
                                         x_max      = 1.4,
                                         y_min      = 2.5,
-                                        y_max      = 2.7,
-                                        angle      =-20.0,
+                                        y_max      = 2.6,
+                                        angle      =-30.0,
                                         plot_fill  = True,
                                         material   = "steel")
         self.o1 = domain_factory.create("rectangle",
                                         x_min      = 1.6,
                                         x_max      = 4.0,
                                         y_min      = 2.5,
-                                        y_max      = 2.7,
-                                        angle      = 20.0,
+                                        y_max      = 2.6,
+                                        angle      = 30.0,
                                         plot_fill  = True,
                                         material   = "steel")
 
