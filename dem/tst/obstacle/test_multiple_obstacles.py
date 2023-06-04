@@ -3,7 +3,7 @@ import os
 import pytest
 
 # Custom imports
-from dem.app.obstacle  import *
+from dem.app.obstacle import *
 from dem.src.core.run import *
 
 ###############################################
