@@ -32,13 +32,13 @@ class silo_open(base_app):
 
         self.nt         = int(self.t_max/self.dt)
         self.plot_it    = 0
-        self.check_freq = 10 # check particles every 10 iterations
 
-        self.n_row  = 25 # nb of particles on a row at start
-        self.n_col  = 20 # nb of particles on a col at start
+        self.rmv_freq = 100 # check particles removal every 10 iterations
+        self.add_freq = 8000 # add new particles every 10 iterations
+
         self.radius = 0.025
 
-        self.p = particles(np          = self.n_row*self.n_col,
+        self.p = particles(np          = 0,
                            nt          = self.nt,
                            material    = "steel",
                            radius      = self.radius,
@@ -50,8 +50,8 @@ class silo_open(base_app):
         self.p.e_wall[:] = 0.5
         self.p.e_part[:] = 0.5
 
-        colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])
-        self.p.c = colors[np.random.randint(0,len(colors),size=self.p.np)]
+        self.colors = np.array(['r', 'g', 'b', 'c', 'm', 'y', 'k'])
+        self.p.c = self.colors[np.random.randint(0,len(self.colors),size=self.p.np)]
 
         self.d = domain_factory.create("rectangle",
                                        x_min         = 0.0,
@@ -64,14 +64,14 @@ class silo_open(base_app):
 
         self.o0 = domain_factory.create("rectangle",
                                         x_min      =-1.0,
-                                        x_max      = 1.4,
+                                        x_max      = 1.5,
                                         y_min      = 2.5,
                                         y_max      = 2.6,
                                         angle      =-30.0,
                                         plot_fill  = True,
                                         material   = "steel")
         self.o1 = domain_factory.create("rectangle",
-                                        x_min      = 1.6,
+                                        x_min      = 1.5,
                                         x_max      = 4.0,
                                         y_min      = 2.5,
                                         y_max      = 2.6,
@@ -92,24 +92,42 @@ class silo_open(base_app):
 
         self.it = 0
         self.t  = 0.0
-        sep  = 4.0*self.radius
-        mid  = 0.5*(self.d.x_min + self.d.x_max)
-        half = 0.5*self.n_row*(self.radius + 0.75*sep)
+        # sep  = 4.0*self.radius
+        # mid  = 0.5*(self.d.x_min + self.d.x_max)
+        # half = 0.5*self.n_row*(self.radius + 0.75*sep)
 
-        for i in range(self.n_row):
-            for j in range(self.n_col):
-                self.p.x[self.n_col*i+j,0] = mid - half + sep*i + self.radius*random.random()
-                self.p.x[self.n_col*i+j,1] = self.d.y_max - 2*sep - sep*j
+        # for i in range(self.n_row):
+        #     for j in range(self.n_col):
+        #         self.p.x[self.n_col*i+j,0] = mid - half + sep*i + self.radius*random.random()
+        #         self.p.x[self.n_col*i+j,1] = self.d.y_max - 2*sep - sep*j
 
     ### ************************************************
     ### Compute forces
     def forces(self):
 
-        # Removing lost particles requires to recompute the
+        # Adding or Removing particles requires to recompute the
         # nearest neighbor lists. Everytime the check is done,
         # we force the recomputation
         force_nearest = False
-        if (self.it%self.check_freq == 0):
+
+        # Add new particles at the top
+        if (self.it%self.add_freq == 0):
+            n = 30
+            m = np.ones((n))*self.p.mass
+            r = np.ones((n))*self.p.radius
+            x = np.zeros((n,2))
+            c = self.colors[np.random.randint(0,len(self.colors),size=n)]
+
+            dx = (self.d.x_max - self.d.x_min)/n
+            for i in range(n):
+                x[i,0] = 0.5*dx + i*dx
+                x[i,1] = self.d.y_max - 0.5
+
+            self.p.add(n, m, r, x, c)
+            force_nearest = True
+
+        # Removing lost particles at the bottom
+        if (self.it%self.rmv_freq == 0):
             self.check_particles(self.d)
             force_nearest = True
 

@@ -23,8 +23,10 @@ As of today, rolling movement is **not** implemented
 
 Running a specific case requires to write an application in `dem/app`, and then to register it in `dem/app/app.py`. You can than call it from root directory doing `python start.py <app_name>`. Multiple app examples are provided in the dedicated directory, to be copied and adapted. Below are some simple sanity checks and a bit more advanced examples of what is possible with this small library.
 
-| **`gravity`**                                             | **`gravity-tilted`**                                           | **`obstacle`**                                            |
-| :-------------------------------------------------------: | :------------------------------------------------------------: | :-------------------------------------------------------: |
-| <img height="250" alt="gif" src="dem/save/gravity.gif">   | <img height="250" alt="gif" src="dem/save/gravity_tilted.gif"> | <img height="250" alt="gif" src="dem/save/obstacle.gif">  |
-| **`dam-break`**                                           | **`silo`**                                                     | **`mill`**                                                |
-| <img height="250" alt="gif" src="dem/save/dam_break.gif"> | <img height="250" alt="gif" src="dem/save/silo.gif">           | <img height="250" alt="gif" src="dem/save/mill.gif">      |
+| **`gravity`**                                             | **`gravity-tilted`**                                           | **`obstacle`**                                           |
+|:---------------------------------------------------------:|:--------------------------------------------------------------:|:--------------------------------------------------------:|
+| <img height="250" alt="gif" src="dem/save/gravity.gif">   | <img height="250" alt="gif" src="dem/save/gravity_tilted.gif"> | <img height="250" alt="gif" src="dem/save/obstacle.gif"> |
+| **`dam-break`**                                           | **`silo`**                                                     | **`mill`**                                               |
+| <img height="250" alt="gif" src="dem/save/dam_break.gif"> | <img height="250" alt="gif" src="dem/save/silo.gif">           | <img height="250" alt="gif" src="dem/save/mill.gif">     |
+| **`silo-open`**                                           | **`?`**                                                        | **`?`**                                                  |
+| <img height="250" alt="gif" src="dem/save/silo_open.gif"> | <img height="250" alt="gif" src="dem/save/logo.png">           | <img height="250" alt="gif" src="dem/save/logo.png">     |
