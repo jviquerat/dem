@@ -100,6 +100,27 @@ class rectangle(base_domain):
         dp[1] = (p[0]-pc[0])*sint + (p[1]-pc[1])*cost + pc[1]
         p[:]  = dp[:]
 
+    ### ************************************************
+    ### Check if point is in domain
+    ### pt is assumed to be an np array of size 2
+    def is_in(self, pm):
+
+        p1p2 = self.p2 - self.p1
+        p1pm =      pm - self.p1
+        p1p4 = self.p4 - self.p1
+
+        p1p2p1pm = np.dot(p1p2, p1pm)
+        p1p2p1p2 = np.dot(p1p2, p1p2)
+        p1p4p1pm = np.dot(p1p4, p1pm)
+        p1p4p1p4 = np.dot(p1p4, p1p4)
+
+        if ((p1p2p1pm > 0.0)      and
+            (p1p2p1p2 > p1p2p1pm) and
+            (p1p4p1pm > 0.0)      and
+            (p1p4p1p4 > p1p4p1pm)): return True
+
+        return False
+
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
 ### Prefix d_ corresponds to domain

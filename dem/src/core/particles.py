@@ -86,17 +86,43 @@ class particles:
     ### Compute maximal velocity
     def max_velocity(self):
 
-        return np.max(np.linalg.norm(self.v, axis=1))
+        if (len(self.v) == 0):
+            return 0.0
+        else:
+            return np.max(np.linalg.norm(self.v, axis=1))
 
     ### ************************************************
     ### Compute maximal radius
     def max_radius(self):
 
-        return np.max(self.r)
+        if (len(self.r) == 0):
+            return 0.0
+        else:
+            return np.max(self.r)
+
+    ### ************************************************
+    ### Remove a list of particles
+    def delete(self, lst):
+
+        self.np     -= len(lst)
+        self.m       = np.delete(self.m,       lst, axis=0)
+        self.r       = np.delete(self.r,       lst, axis=0)
+        self.x       = np.delete(self.x,       lst, axis=0)
+        self.d       = np.delete(self.d,       lst, axis=0)
+        self.v       = np.delete(self.v,       lst, axis=0)
+        self.a       = np.delete(self.a,       lst, axis=0)
+        self.f       = np.delete(self.f,       lst, axis=0)
+        self.e_wall  = np.delete(self.e_wall,  lst, axis=0)
+        self.mu_wall = np.delete(self.mu_wall, lst, axis=0)
+        self.e_part  = np.delete(self.e_part,  lst, axis=0)
+        self.mu_part = np.delete(self.mu_part, lst, axis=0)
+        self.Y       = np.delete(self.Y,       lst, axis=0)
+        self.G       = np.delete(self.G,       lst, axis=0)
+        self.c       = np.delete(np.array(self.c), lst, axis=0).tolist()
 
     ### ************************************************
     ### Compute collisions between particles
-    def collisions(self, dt):
+    def collisions(self, dt, force_nearest=False):
 
         if (self.search == "linear"):
 
@@ -117,7 +143,7 @@ class particles:
             # If list is not valid anymore
             v_max       = self.max_velocity()
             self.d_ngb += 2.0*v_max*dt
-            if (self.d_ngb > 0.99*self.m_rad):
+            if ((self.d_ngb > 0.99*self.m_rad) or force_nearest):
                 self.d_ngb = 0.0
                 self.ngbi, self.ngbj = list_ngbs(self.np, self.x,
                                                  self.r,  self.m_rad)

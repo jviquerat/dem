@@ -30,8 +30,9 @@ class silo_open(base_app):
         self.plot_trajectory  = plot_trajectory
         self.plot_png         = plot_png
 
-        self.nt        = int(self.t_max/self.dt)
-        self.plot_it   = 0
+        self.nt         = int(self.t_max/self.dt)
+        self.plot_it    = 0
+        self.check_freq = 10 # check particles every 10 iterations
 
         self.n_row  = 25 # nb of particles on a row at start
         self.n_col  = 20 # nb of particles on a col at start
@@ -104,9 +105,23 @@ class silo_open(base_app):
     ### Compute forces
     def forces(self):
 
+        # Removing lost particles requires to recompute the
+        # nearest neighbor lists. Everytime the check is done,
+        # we force the recomputation
+        force_nearest = False
+        if (self.it%self.check_freq == 0):
+            self.check_particles(self.d)
+            force_nearest = True
+
         self.p.reset_forces()
-        self.p.collisions(self.dt)
+        self.p.collisions(self.dt, force_nearest=force_nearest)
         self.d.collisions(self.p, self.dt)
         self.o0.collisions(self.p, self.dt)
         self.o1.collisions(self.p, self.dt)
         self.p.gravity(self.g)
+
+    ### ************************************************
+    ### Iteration printings (overrides base_app::printings)
+    def printings(self):
+
+        print("# it = "+str(self.it)+", t = {0:.3f}".format(self.t)+" / {0:.3f}".format(self.t_max)+", n_particles = "+str(self.p.np), end='\r')
