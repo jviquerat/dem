@@ -101,6 +101,26 @@ class particles:
             return np.max(self.r)
 
     ### ************************************************
+    ### Add n particles
+    def add(self, n, m, r, x, c):
+
+        self.np     += n
+        self.m       = np.append(self.m,       m,                             axis=0)
+        self.r       = np.append(self.r,       r,                             axis=0)
+        self.x       = np.append(self.x,       x,                             axis=0)
+        self.d       = np.append(self.d,       np.zeros((n,2)),               axis=0)
+        self.v       = np.append(self.v,       np.zeros((n,2)),               axis=0)
+        self.a       = np.append(self.a,       np.zeros((n,2)),               axis=0)
+        self.f       = np.append(self.f,       np.zeros((n,2)),               axis=0)
+        self.e_wall  = np.append(self.e_wall,  np.ones((n))*self.mtr.e_wall,  axis=0)
+        self.mu_wall = np.append(self.mu_wall, np.ones((n))*self.mtr.mu_wall, axis=0)
+        self.e_part  = np.append(self.e_part,  np.ones((n))*self.mtr.e_part,  axis=0)
+        self.mu_part = np.append(self.mu_part, np.ones((n))*self.mtr.mu_part, axis=0)
+        self.Y       = np.append(self.Y,       np.ones((n))*self.mtr.Y,       axis=0)
+        self.G       = np.append(self.G,       np.ones((n))*self.mtr.G,       axis=0)
+        self.c       = np.append(self.c,       c)
+
+    ### ************************************************
     ### Remove a list of particles
     def delete(self, lst):
 
