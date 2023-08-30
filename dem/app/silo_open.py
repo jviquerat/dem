@@ -13,7 +13,7 @@ class silo_open(base_app):
     ### Constructor
     def __init__(self,
                  name             = 'silo_open',
-                 t_max            = 3.5,
+                 t_max            = 5.0,
                  dt               = 2.5e-5,
                  angle            = 0.0,
                  plot_freq        = 500,
@@ -34,9 +34,10 @@ class silo_open(base_app):
         self.plot_it    = 0
 
         self.rmv_freq = 100 # check particles removal every 10 iterations
-        self.add_freq = 8000 # add new particles every 10 iterations
+        self.add_freq = 10000 # add new particles every 10 iterations
 
         self.radius = 0.025
+        self.radii = np.array([0.025, 0.075])
 
         self.p = particles(np          = 0,
                            nt          = self.nt,
@@ -92,14 +93,6 @@ class silo_open(base_app):
 
         self.it = 0
         self.t  = 0.0
-        # sep  = 4.0*self.radius
-        # mid  = 0.5*(self.d.x_min + self.d.x_max)
-        # half = 0.5*self.n_row*(self.radius + 0.75*sep)
-
-        # for i in range(self.n_row):
-        #     for j in range(self.n_col):
-        #         self.p.x[self.n_col*i+j,0] = mid - half + sep*i + self.radius*random.random()
-        #         self.p.x[self.n_col*i+j,1] = self.d.y_max - 2*sep - sep*j
 
     ### ************************************************
     ### Compute forces
@@ -112,9 +105,10 @@ class silo_open(base_app):
 
         # Add new particles at the top
         if (self.it%self.add_freq == 0):
-            n = 30
+            n = 10
             m = np.ones((n))*self.p.mass
             r = np.ones((n))*self.p.radius
+            r = self.radii[np.random.randint(0,len(self.radii),size=n)]
             x = np.zeros((n,2))
             c = self.colors[np.random.randint(0,len(self.colors),size=n)]
 
