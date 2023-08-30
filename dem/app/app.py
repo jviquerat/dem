@@ -8,6 +8,7 @@ from dem.app.obstacle     import *
 from dem.app.silo         import *
 from dem.app.mill         import *
 from dem.app.circular     import *
+from dem.app.silo_open    import *
 
 # Declare factory
 app_factory = factory()
@@ -21,3 +22,4 @@ app_factory.register("obstacle",    obstacle)
 app_factory.register("silo",        silo)
 app_factory.register("mill",        mill)
 app_factory.register("circular",    circular)
+app_factory.register("silo_open",   silo_open)

@@ -9,19 +9,7 @@ class base_domain():
         pass
 
     ### ************************************************
-    ### Compute distance to particle
-    def distance(self, p):
-
-        raise NotImplementedError
-
-    ### ************************************************
-    ### Detect collision with particle
-    def collide(self, p):
-
-        raise NotImplementedError
-
-    ### ************************************************
-    ### Plot domain
-    def plot(self, ax):
+    ### Check if point is in domain
+    def is_in(self, pt):
 
         raise NotImplementedError

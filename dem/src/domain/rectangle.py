@@ -17,13 +17,14 @@ class rectangle(base_domain):
     ### ************************************************
     ### Constructor
     def __init__(self,
-                 x_min     = 0.0,
-                 x_max     = 1.0,
-                 y_min     = 0.0,
-                 y_max     = 1.0,
-                 angle     = 0.0, # in degrees
-                 plot_fill = False,
-                 material  = "steel"):
+                 x_min         = 0.0,
+                 x_max         = 1.0,
+                 y_min         = 0.0,
+                 y_max         = 1.0,
+                 angle         = 0.0, # in degrees
+                 plot_fill     = False,
+                 material      = "steel",
+                 open_boundary = [False, False, False, False]):
 
         # Type
         self.type = "rectangle"
@@ -43,6 +44,9 @@ class rectangle(base_domain):
 
         # Material
         self.mat = material_factory.create(material)
+
+        # Open boundaries
+        self.open_boundary = np.array(open_boundary)
 
         # Ficticious parameters for domain
         self.r     = 1.0e8
@@ -81,7 +85,7 @@ class rectangle(base_domain):
 
         # Search for collisions linearly and compute forces
         linear_search(self.seg_pts, self.r, self.m,
-                      self.v, self.mat.Y, self.mat.G,
+                      self.v, self.mat.Y, self.mat.G, self.open_boundary,
                       p.x, p.r, p.m, p.v, p.e_wall, p.mu_wall,
                       p.Y, p.G, p.f, p.np, dt)
 
@@ -96,13 +100,34 @@ class rectangle(base_domain):
         dp[1] = (p[0]-pc[0])*sint + (p[1]-pc[1])*cost + pc[1]
         p[:]  = dp[:]
 
+    ### ************************************************
+    ### Check if point is in domain
+    ### pt is assumed to be an np array of size 2
+    def is_in(self, pm):
+
+        p1p2 = self.p2 - self.p1
+        p1pm =      pm - self.p1
+        p1p4 = self.p4 - self.p1
+
+        p1p2p1pm = np.dot(p1p2, p1pm)
+        p1p2p1p2 = np.dot(p1p2, p1p2)
+        p1p4p1pm = np.dot(p1p4, p1pm)
+        p1p4p1p4 = np.dot(p1p4, p1p4)
+
+        if ((p1p2p1pm > 0.0)      and
+            (p1p2p1p2 > p1p2p1pm) and
+            (p1p4p1pm > 0.0)      and
+            (p1p4p1p4 > p1p4p1pm)): return True
+
+        return False
+
 ### ************************************************
 ### Distance from rectangle domain to given coordinates
 ### Prefix d_ corresponds to domain
 ### Prefix p_ corresponds to particle
 @nb.njit(cache=True)
 def linear_search(d_pts, d_r, d_m,
-                  d_v, d_mat_Y, d_mat_G,
+                  d_v, d_mat_Y, d_mat_G, open_boundary,
                   p_x, p_r, p_m, p_v, p_e_wall, p_mu_wall,
                   p_Y, p_G, p_f, n, dt):
 
@@ -111,6 +136,10 @@ def linear_search(d_pts, d_r, d_m,
 
         # Loop on rectangle sides
         for j in range(4):
+
+            # If this boundary is open, loop
+            if (open_boundary[j]): continue
+
             dx, nrm = p_to_segment(p_x[i], d_pts[j,0], d_pts[j,1])
             dx      = dx - p_r[i]
 

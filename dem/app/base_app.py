@@ -52,6 +52,18 @@ class base_app():
         self.t  += self.dt
 
     ### ************************************************
+    ### Check if particles are still in the domain
+    def check_particles(self, d):
+
+        lst = []
+
+        for i in range(self.p.np):
+            if (not d.is_in(self.p.x[i,:])):
+                lst.append(i)
+
+        self.p.delete(lst)
+
+    ### ************************************************
     ### Plot
     def plot(self):
 
