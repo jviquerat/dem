@@ -28,5 +28,5 @@ Running a specific case requires to write an application in `dem/app`, and then 
 | <img height="250" alt="gif" src="dem/save/gravity.gif">   | <img height="250" alt="gif" src="dem/save/gravity_tilted.gif"> | <img height="250" alt="gif" src="dem/save/obstacle.gif"> |
 | **`dam-break`**                                           | **`silo`**                                                     | **`mill`**                                               |
 | <img height="250" alt="gif" src="dem/save/dam_break.gif"> | <img height="250" alt="gif" src="dem/save/silo.gif">           | <img height="250" alt="gif" src="dem/save/mill.gif">     |
-| **`silo-open`**                                           | **`?`**                                                        | **`?`**                                                  |
-| <img height="250" alt="gif" src="dem/save/silo_open.gif"> | <img height="250" alt="gif" src="dem/save/logo.png">           | <img height="250" alt="gif" src="dem/save/logo.png">     |
+| **`silo-open`**                                           | **`turek`**                                                    | **`?`**                                                  |
+| <img height="250" alt="gif" src="dem/save/silo_open.gif"> | <img height="250" alt="gif" src="dem/save/turek.gif">          | <img height="250" alt="gif" src="dem/save/logo.png">     |
