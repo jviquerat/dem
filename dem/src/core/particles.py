@@ -102,14 +102,14 @@ class particles:
 
     ### ************************************************
     ### Add n particles
-    def add(self, n, m, r, x, c):
+    def add(self, n, m, r, x, v, c):
 
         self.np     += n
         self.m       = np.append(self.m,       m,                             axis=0)
         self.r       = np.append(self.r,       r,                             axis=0)
         self.x       = np.append(self.x,       x,                             axis=0)
         self.d       = np.append(self.d,       np.zeros((n,2)),               axis=0)
-        self.v       = np.append(self.v,       np.zeros((n,2)),               axis=0)
+        self.v       = np.append(self.v,       v,                             axis=0)
         self.a       = np.append(self.a,       np.zeros((n,2)),               axis=0)
         self.f       = np.append(self.f,       np.zeros((n,2)),               axis=0)
         self.e_wall  = np.append(self.e_wall,  np.ones((n))*self.mtr.e_wall,  axis=0)
